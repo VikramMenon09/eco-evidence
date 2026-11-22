@@ -9,6 +9,7 @@ dist/
 cache/
 output/
 outputs/
+runs/
 .env
 .env.*
 .DS_Store

@@ -1,0 +1,65 @@
+{
+  "counts": {
+    "available": 1,
+    "missing": 1,
+    "not_returned": 1
+  },
+  "created_at": "2026-11-22T22:34:30Z",
+  "csv_sha256": "79913da3d5d2623678a12cac09b7d9ece4fea9c10d43bc737762eedd28907d4c",
+  "data_origin": "synthetic_fixture",
+  "indicator": {
+    "code": "SP.POP.TOTL",
+    "name": "Population, total",
+    "registry_checked_on": "2026-11-22",
+    "source_note": "Synthetic fixture metadata; not an official source response.",
+    "source_organization": "EcoEvidence test fixture authors",
+    "unit": "people",
+    "unit_basis": "curated from official indicator name/definition; API unit may be blank"
+  },
+  "query": {
+    "countries": [
+      "USA"
+    ],
+    "end_year": 2022,
+    "indicator": "SP.POP.TOTL",
+    "start_year": 2020
+  },
+  "raw_sources": [
+    {
+      "file": "raw/001.json",
+      "retrieved_at": "2026-11-22T12:00:00Z",
+      "sha256": "21b045b07f0d3343c76abfc65791465ccb63efbcee8f2f2caaebed844626ee9f",
+      "url": "https://api.worldbank.org/v2/country/USA?format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/002.json",
+      "retrieved_at": "2026-11-22T12:00:00Z",
+      "sha256": "01f375af99b718fd9aaf07d1f4b4526dde6937a69d30b73705155382865d7cfd",
+      "url": "https://api.worldbank.org/v2/indicator/SP.POP.TOTL?source=2&format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/003.json",
+      "retrieved_at": "2026-11-22T12:00:00Z",
+      "sha256": "3a56c50a68d26549532574575581a520c582156f96e5ee788d66681630a594ab",
+      "url": "https://api.worldbank.org/v2/country/USA/indicator/SP.POP.TOTL?source=2&date=2020%3A2022&format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/004.json",
+      "retrieved_at": "2026-11-22T12:00:00Z",
+      "sha256": "2700c528b905cdb9391b81383a95c66e3dc1ae5665f35241727018b06f90ebe7",
+      "url": "https://api.worldbank.org/v2/country/USA/indicator/SP.POP.TOTL?source=2&date=2020%3A2022&format=json&per_page=1000&page=2"
+    }
+  ],
+  "row_count": 3,
+  "schema_version": 1,
+  "source": {
+    "catalog_url": "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators",
+    "id": "2",
+    "last_updated": "2026-11-22",
+    "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
+    "name": "World Development Indicators",
+    "terms_url": "https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets"
+  },
+  "tool": "eco-evidence",
+  "tool_version": "0.1.0"
+}

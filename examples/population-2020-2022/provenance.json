@@ -1,0 +1,60 @@
+{
+  "counts": {
+    "available": 6,
+    "missing": 0,
+    "not_returned": 0
+  },
+  "created_at": "2026-11-22T22:28:45Z",
+  "csv_sha256": "16a7755312a6eac0e0bea838aa8bb9f14ebfb29737b3f16e9d13418ec32c0a26",
+  "data_origin": "worldbank_api",
+  "indicator": {
+    "code": "SP.POP.TOTL",
+    "name": "Population, total",
+    "registry_checked_on": "2026-11-22",
+    "source_note": "Total population is based on the de facto definition of population, which counts all residents regardless of legal status or citizenship. The values shown are midyear estimates.",
+    "source_organization": "World Population Prospects, United Nations (UN), uri: https://population.un.org/wpp/, publisher: UN Population Division;\nStatistical databases and publications from national statistical offices, National Statistical Offices (NSOs), uri: https://unstats.un.org/home/nso_sites/, publisher: National Statistical Offices;\nEurostat: Demographic Statistics, Eurostat (ESTAT), uri: https://ec.europa.eu/eurostat/data/database?node_code=earn_ses_monthly, publisher: Eurostat;\nPopulation and Vital Statistics Report (various years), United Nations (UN), uri: https://unstats.un.org, publisher: UN Statistics Division",
+    "unit": "people",
+    "unit_basis": "curated from official indicator name/definition; API unit may be blank"
+  },
+  "query": {
+    "countries": [
+      "IND",
+      "USA"
+    ],
+    "end_year": 2022,
+    "indicator": "SP.POP.TOTL",
+    "start_year": 2020
+  },
+  "raw_sources": [
+    {
+      "file": "raw/001.json",
+      "retrieved_at": "2026-11-22T22:28:45Z",
+      "sha256": "3ee2d3f608511798a8a1529e46f2d17e8a7bf1ac8050755a7599a278c937f468",
+      "url": "https://api.worldbank.org/v2/country/IND;USA?format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/002.json",
+      "retrieved_at": "2026-11-22T22:28:45Z",
+      "sha256": "689a8664399394b9d35c831ee21f7406a8e059acc3be5fc3da02313f5562dd63",
+      "url": "https://api.worldbank.org/v2/indicator/SP.POP.TOTL?source=2&format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/003.json",
+      "retrieved_at": "2026-11-22T22:28:45Z",
+      "sha256": "0afddecc04fd9a3af0db8c37800042330174c5bd069bdcba7e2fc2d67f272b30",
+      "url": "https://api.worldbank.org/v2/country/IND;USA/indicator/SP.POP.TOTL?source=2&date=2020%3A2022&format=json&per_page=1000&page=1"
+    }
+  ],
+  "row_count": 6,
+  "schema_version": 1,
+  "source": {
+    "catalog_url": "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators",
+    "id": "2",
+    "last_updated": "2026-11-11",
+    "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
+    "name": "World Development Indicators",
+    "terms_url": "https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets"
+  },
+  "tool": "eco-evidence",
+  "tool_version": "0.1.0"
+}

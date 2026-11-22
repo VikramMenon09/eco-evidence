@@ -1,0 +1,110 @@
+# EcoEvidence
+
+Reproducible evidence bundles for economics and environmental research. Start with a small reviewed World Bank indicator registry, retrieve country-year data, and keep the exact source responses next to the tidy CSV. Every bundle records retrieval timestamps, definitions, units, source organizations and content hashes.
+
+This first release is a data foundation for a long-term research resource. It does not infer causality, rank countries or silently fill missing values. Its useful next contributions are documented indicator additions, source checks, validation improvements and reproducible research examples.
+
+## Run it
+
+Requires Python 3.11 or later. There are **no runtime dependencies**. From this checkout:
+
+```sh
+python3 -m eco_evidence indicators
+python3 -m eco_evidence fetch --indicator population --countries USA,IND \
+  --start-year 2020 --end-year 2022 --output runs/population-2020-2022
+```
+
+Each output directory must be new; the command never intentionally replaces an earlier bundle. The default cache is `.cache/eco-evidence` in the current working directory. Cached observations retain their original retrieval dates; online country and indicator metadata are fetched afresh on every run. Add `--refresh` to fetch observation pages afresh too, or `--cache-dir PATH` to choose the cache location. Use `--offline` for a fully archived replay.
+
+Optional installation in a virtual environment creates the `eco-evidence` command:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -e .
+.venv/bin/eco-evidence indicators
+```
+
+Installation needs the build backend; running `python3 -m eco_evidence` directly needs only the standard library.
+
+## Reviewed indicator registry
+
+Official metadata was checked on **22 November 2026**. Online runs fetch current country and indicator metadata; offline runs validate the archived metadata. Indicator names and source IDs are checked against the registry, and each observation's indicator name must match. A changed name stops export for review, which can catch a renamed unit or base year; changes not reflected in a name still need source review. The API's `unit` field is blank for these series, so the registry explicitly records units derived from official names and definitions.
+
+| Alias | World Bank code | Unit | Meaning and scope |
+| --- | --- | --- | --- |
+| `gdp` | `NY.GDP.MKTP.KD` | constant 2015 US$ | Annual domestic output in constant prices; total GDP, not per capita or PPP. [Official metadata](https://api.worldbank.org/v2/indicator/NY.GDP.MKTP.KD?format=json) |
+| `population` | `SP.POP.TOTL` | people | Total midyear population estimate under the source's residency definition. [Official metadata](https://api.worldbank.org/v2/indicator/SP.POP.TOTL?format=json) |
+| `renewables` | `EG.FEC.RNEW.ZS` | % of total final energy consumption | Renewable share of final energy consumption; not the renewable share of electricity generation. [Official metadata](https://api.worldbank.org/v2/indicator/EG.FEC.RNEW.ZS?format=json) |
+
+All three use World Development Indicators, source ID `2`. Original providers are retained in each bundle. The renewable series metadata credits the IEA; population and GDP combine several official sources. Availability varies by indicator, country and year. The latest calendar year may have no reported values, and source revisions can change earlier years.
+
+## Output contract
+
+```text
+your-bundle/
+  data.csv
+  provenance.json
+  raw/001.json
+  raw/002.json
+  ...
+```
+
+`data.csv` has one row for every requested country-year, sorted by country code and ascending year. Columns are `country_code`, `country_name`, `year`, `indicator_code`, `indicator_name`, `value`, `unit`, `status`, `source_obs_status`, and `data_origin`.
+
+| Source situation | `value` | `status` |
+| --- | --- | --- |
+| Source provides a number, including zero | Exact parsed decimal representation; zero remains `0` | `available` |
+| Source explicitly returns `null` | Empty CSV cell | `missing` |
+| A requested country-year is absent from a complete response | Empty CSV cell | `not_returned` |
+
+`available` means a source supplied a number; it does not claim a direct measurement rather than an estimate. No interpolation, zero filling, rounding, unit conversion or economic transformation occurs. Decimal JSON numbers are parsed as decimal values rather than binary floats. Original numeric spelling remains available in the raw response.
+
+`provenance.json` contains the canonical query, tool version, export timestamp, source metadata/revision date, row/status counts, the CSV SHA-256, and every raw response URL, original retrieval timestamp, filename and SHA-256. These checks detect accidental changes; they are not a cryptographic signature from the source. The manifest is not self-authenticating: someone able to edit it can change hashes or origin labels. Replay bundles from a trusted custodian, and retain their version-controlled history. The WDI update date is a database date, not the date an individual observation was measured.
+
+## Offline reproducibility
+
+Replay an earlier bundle with **zero network calls**:
+
+```sh
+python3 -m eco_evidence fetch --indicator population --countries USA,IND \
+  --start-year 2020 --end-year 2022 --offline runs/population-2020-2022 \
+  --output runs/population-replay
+```
+
+The archived query must match the requested URLs exactly. Country order is normalized, so `IND,USA` and `USA,IND` select the same query. Raw-response hashes and original retrieval timestamps are preserved. For the same code version, the resulting CSV is byte-identical; the new export timestamp in provenance can differ.
+
+A deliberately **synthetic** offline fixture demonstrates a zero, a missing value and an omitted year:
+
+```sh
+python3 -m eco_evidence fetch --indicator population --countries USA \
+  --start-year 2020 --end-year 2022 --offline examples/synthetic-population \
+  --output runs/synthetic-demo
+```
+
+Every fixture row is marked `data_origin=synthetic_fixture`. Its values are invented for testing and must never be cited as country statistics. A live-source bundle uses `worldbank_api`. No source silently falls back to invented values when a request fails.
+
+## Validation and failure behavior
+
+- Select one reviewed indicator and 1–20 distinct three-letter World Bank country/economy codes. The CLI normalizes letter case. Official country metadata must recognize every code; regional and income aggregates are excluded in this MVP.
+- Years run from 1960 through the current UTC year, in ascending order. An accepted year does not imply data availability.
+- Requests use HTTPS with certificate verification, a default 15-second per-request timeout (configurable from 1–30), at most 30 network requests, ten pages per endpoint and 5 MB per response. There are no automatic retries or unbounded pagination loops.
+- HTTP errors, invalid schemas, duplicate observations, missing identity fields, unexpected indicator names, changed pagination/revision metadata, and non-finite values stop the run. A final output directory is written only after successful validation.
+- Cache entries are retained until refreshed. For current research, use `--refresh`; for an exact historical replay, use `--offline`. Independent requests are not an atomic database snapshot: a stable database update label reduces, but cannot eliminate, revision timing risk.
+
+Online runs can combine newly retrieved metadata with older cached observations; every raw timestamp remains explicit. Use `--refresh` when collecting a current research snapshot. New bundle directories are owner-only by default; publish or share their contents using your project's normal sharing process.
+
+If Python reports a certificate verification failure, configure your Python installation's trusted CA bundle. On systems where `/etc/ssl/cert.pem` is the maintained trusted bundle, `SSL_CERT_FILE=/etc/ssl/cert.pem python3 ...` is a standard option. Certificate checks are never disabled by this project.
+
+## Tests
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+The suite uses synthetic, clearly labeled offline responses and mocked HTTP failures. It exercises the actual command entry point, pagination consistency, precise decimal parsing, missing-versus-zero semantics, invalid inputs and schemas, hash-verified offline replay, CSV/provenance agreement, request limits, and incomplete-run cleanup. Tests make no network calls.
+
+## Sources, attribution and licenses
+
+The [World Bank WDI catalog](https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators) lists Creative Commons Attribution 4.0. Retain attribution to World Bank and the original providers named in indicator metadata; review [World Bank dataset terms](https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets) and any indicator-specific conditions before reuse. A code license does not relicense upstream data. EcoEvidence is independent and is not endorsed by the World Bank or other providers.
+
+For a downloaded bundle, cite the indicator code/name, World Development Indicators, original provider, retrieval date and URL recorded in `provenance.json`. State any later transformations separately. For API mechanics, see the official [basic call structures](https://datahelpdesk.worldbank.org/knowledgebase/articles/898581-api-basic-call-structures) and [indicator query documentation](https://datahelpdesk.worldbank.org/knowledgebase/articles/898599-indicator-api-queries).

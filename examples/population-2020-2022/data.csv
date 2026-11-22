@@ -1,0 +1,7 @@
+country_code,country_name,year,indicator_code,indicator_name,value,unit,status,source_obs_status,data_origin
+IND,India,2020,SP.POP.TOTL,"Population, total",1402617695,people,available,,worldbank_api
+IND,India,2021,SP.POP.TOTL,"Population, total",1414203896,people,available,,worldbank_api
+IND,India,2022,SP.POP.TOTL,"Population, total",1425423212,people,available,,worldbank_api
+USA,United States,2020,SP.POP.TOTL,"Population, total",331578104,people,available,,worldbank_api
+USA,United States,2021,SP.POP.TOTL,"Population, total",332100166,people,available,,worldbank_api
+USA,United States,2022,SP.POP.TOTL,"Population, total",333996304,people,available,,worldbank_api

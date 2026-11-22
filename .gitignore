@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.cache/
+cache/
+output/
+outputs/
+.env
+.env.*
+.DS_Store
+*.lock
+routine-state*.json

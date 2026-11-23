@@ -5,12 +5,14 @@ import json
 from pathlib import Path
 import sys
 
+from . import __version__
 from .core import BundleReader, EvidenceError, NetworkReader, Query, export_bundle
 from .registry import INDICATORS
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Create reproducible environmental economics evidence bundles.")
+    parser = argparse.ArgumentParser(prog="eco-evidence", description="Create reproducible environmental economics evidence bundles.")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("indicators", help="List the reviewed indicator registry (no network).")
     fetch = commands.add_parser("fetch", help="Fetch one indicator, or replay an archived query offline.")
@@ -22,7 +24,7 @@ def main(argv=None):
     fetch.add_argument("--cache-dir", type=Path, default=Path(".cache/eco-evidence"))
     fetch.add_argument("--refresh", action="store_true", help="Retrieve every page afresh instead of reusing cache entries")
     fetch.add_argument("--offline", type=Path, help="Saved bundle to replay; makes zero network requests")
-    fetch.add_argument("--timeout", type=float, default=15, help="Per-request timeout in seconds (1–30)")
+    fetch.add_argument("--timeout", type=float, default=15, help="Blocking network-operation timeout in seconds (1–30); not a total download deadline")
     args = parser.parse_args(argv)
     if args.command == "indicators":
         for item in INDICATORS:

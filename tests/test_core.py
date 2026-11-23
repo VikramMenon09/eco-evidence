@@ -153,7 +153,7 @@ class ModelTests(unittest.TestCase):
             self.assertEqual(parsed[0]["country_name"], "Synthetic example, economy")
             for raw in provenance["raw_sources"]:
                 self.assertEqual(digest((first / raw["file"]).read_bytes()), raw["sha256"])
-            with patch("eco_evidence.core.urlopen", side_effect=AssertionError("Network forbidden")):
+            with patch("eco_evidence.core.open_official", side_effect=AssertionError("Network forbidden")):
                 replay = export_bundle(self.query, BundleReader(first), second)
             self.assertEqual(csv_bytes, (second / "data.csv").read_bytes())
             self.assertEqual(replay["raw_sources"], provenance["raw_sources"])
@@ -193,7 +193,7 @@ class NetworkTests(unittest.TestCase):
         url = request_url("country/USA", {}, 1)
         for error in (HTTPError(url, 429, "rate limit", None, None), URLError("offline"),
                       TimeoutError("timeout"), IncompleteRead(b"truncated", 100)):
-            with tempfile.TemporaryDirectory() as tmp, patch("eco_evidence.core.urlopen", side_effect=error):
+            with tempfile.TemporaryDirectory() as tmp, patch("eco_evidence.core.open_official", side_effect=error):
                 with self.assertRaises(EvidenceError): NetworkReader(tmp).get(url)
                 self.assertEqual(list(Path(tmp).iterdir()), [])
         with tempfile.TemporaryDirectory() as tmp:
@@ -211,9 +211,9 @@ class NetworkTests(unittest.TestCase):
             def geturl(self): return url
             def read(self, _): return body
         with tempfile.TemporaryDirectory() as tmp:
-            with patch("eco_evidence.core.urlopen", return_value=Response()):
+            with patch("eco_evidence.core.open_official", return_value=Response()):
                 first = NetworkReader(tmp).get(url)
-            with patch("eco_evidence.core.urlopen", side_effect=AssertionError("Network forbidden")):
+            with patch("eco_evidence.core.open_official", side_effect=AssertionError("Network forbidden")):
                 second = NetworkReader(tmp).get(url)
             self.assertEqual(first, second)
             cache_file = next(Path(tmp).iterdir())
@@ -230,7 +230,7 @@ class NetworkTests(unittest.TestCase):
             def __exit__(self, *_): return False
             def geturl(self): return url
             def read(self, _): return json.dumps(payload).encode()
-        with tempfile.TemporaryDirectory() as tmp, patch("eco_evidence.core.urlopen", return_value=Response()) as network:
+        with tempfile.TemporaryDirectory() as tmp, patch("eco_evidence.core.open_official", return_value=Response()) as network:
             first = NetworkReader(tmp).get(url)
             payload[1][0]["name"] = "Population (thousands)"
             second = NetworkReader(tmp).get(url)
@@ -251,7 +251,7 @@ class NetworkTests(unittest.TestCase):
             def __enter__(self): return self
             def __exit__(self, *_): return False
             def geturl(self): return "https://example.org/unexpected"
-        with tempfile.TemporaryDirectory() as tmp, patch("eco_evidence.core.urlopen", return_value=Response()):
+        with tempfile.TemporaryDirectory() as tmp, patch("eco_evidence.core.open_official", return_value=Response()):
             with self.assertRaises(EvidenceError): NetworkReader(tmp).get(data_url())
             self.assertEqual(list(Path(tmp).iterdir()), [])
 

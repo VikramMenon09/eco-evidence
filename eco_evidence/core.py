@@ -3,24 +3,30 @@
 import base64
 import csv
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from decimal import Decimal
+from datetime import date, datetime, timezone
+from decimal import Decimal, DecimalException
 import hashlib
 from http.client import HTTPException
 import io
 import json
+import os
 from pathlib import Path
 import re
 import shutil
+import stat
 import tempfile
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from . import __version__
 from .registry import API_BASE, CATALOG_URL, CHECKED_ON, TERMS_URL, get_indicator
 
 MAX_BYTES = 5_000_000
+MAX_MANIFEST_BYTES = 1_000_000
+MAX_CACHE_BYTES = 7_000_000  # Base64 for a 5 MB response plus its envelope.
+MAX_COUNTRY_NAME_BYTES = 1024
+MAX_OBS_STATUS_BYTES = 256
 MAX_PAGES = 10
 MAX_REQUESTS = 30
 PER_PAGE = 1000
@@ -41,23 +47,106 @@ def digest(data):
 def decode_json(raw):
     def invalid_constant(value):
         raise ValueError(f"Non-finite JSON constant: {value}")
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"Repeated JSON field: {key}")
+            result[key] = value
+        return result
     try:
-        return json.loads(raw, parse_float=Decimal, parse_constant=invalid_constant)
-    except (ValueError, UnicodeError, RecursionError) as exc:
-        raise EvidenceError("Source is not valid finite JSON.") from exc
+        return json.loads(raw, parse_float=Decimal, parse_constant=invalid_constant,
+                          object_pairs_hook=unique_object)
+    except (ValueError, UnicodeError, RecursionError, DecimalException) as exc:
+        raise EvidenceError("Source is not unambiguous finite JSON.") from exc
 
 
-def required_text(value, field, allow_empty=False):
+def read_bounded_file(filename, limit):
+    """Read a regular file with a size cap; never consume a pipe or device."""
+    flags = os.O_RDONLY | getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_BINARY", 0)
+    descriptor = os.open(filename, flags)
+    try:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode) or metadata.st_size > limit:
+            raise EvidenceError("Input must be a regular file within its size limit.")
+        with os.fdopen(descriptor, "rb") as stream:
+            descriptor = None
+            body = stream.read(limit + 1)
+        if len(body) > limit:
+            raise EvidenceError("Input grew beyond its size limit while being read.")
+        return body
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
+def require_api_url(url):
+    """Validate the destination before opening it, including every redirect."""
+    try:
+        target = urlparse(url)
+        valid = (isinstance(url, str) and target.scheme == "https"
+                 and target.hostname == "api.worldbank.org" and target.port in (None, 443)
+                 and target.username is None and target.password is None and not target.fragment)
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise EvidenceError("Invalid World Bank API URL.") from exc
+    if not valid:
+        raise EvidenceError("Only the official HTTPS World Bank API is supported.")
+    return target
+
+
+class OfficialRedirectHandler(HTTPRedirectHandler):
+    """Reject foreign or downgraded redirects before their request is sent."""
+
+    def __init__(self, charge_redirect):
+        self.charge_redirect = charge_redirect
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        try:
+            require_api_url(newurl)
+            redirected = super().redirect_request(req, fp, code, msg, headers, newurl)
+            if redirected is not None:
+                self.charge_redirect()
+            return redirected
+        except BaseException:
+            fp.close()
+            raise
+
+
+def open_official(request, *, timeout, charge_redirect):
+    return build_opener(OfficialRedirectHandler(charge_redirect)).open(request, timeout=timeout)
+
+
+def required_text(value, field, allow_empty=False, *, max_bytes=None):
     if not isinstance(value, str) or (not allow_empty and not value.strip()):
         raise EvidenceError(f"Invalid or missing source field: {field}.")
+    try:
+        encoded = value.encode("utf-8")
+    except UnicodeError as exc:
+        raise EvidenceError(f"Source field is not valid Unicode text: {field}.") from exc
+    if max_bytes is not None and len(encoded) > max_bytes:
+        raise EvidenceError(f"Source field exceeds {max_bytes} UTF-8 bytes: {field}.")
     return value
 
 
 def integer(value, field, minimum=0):
     if isinstance(value, str) and re.fullmatch(r"[0-9]+", value):
-        value = int(value)
+        try:
+            value = int(value)
+        except ValueError as exc:
+            raise EvidenceError(f"Invalid source integer: {field}.") from exc
     if type(value) is not int or value < minimum:
         raise EvidenceError(f"Invalid source integer: {field}.")
+    return value
+
+
+def source_date(value):
+    required_text(value, "lastupdated")
+    try:
+        if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+            raise ValueError("expected ISO date")
+        date.fromisoformat(value)
+    except ValueError as exc:
+        raise EvidenceError("Source lastupdated must be a valid YYYY-MM-DD date.") from exc
     return value
 
 
@@ -131,15 +220,18 @@ class NetworkReader:
         self.timeout = timeout
         self.requests = 0
 
+    def charge_request(self):
+        self.requests += 1
+        if self.requests > MAX_REQUESTS:
+            raise EvidenceError("Request budget exceeded (30 requests, including redirects).")
+
     def get(self, url):
-        target = urlparse(url)
-        if target.scheme != "https" or target.netloc != "api.worldbank.org":
-            raise EvidenceError("Only the official HTTPS World Bank API is supported.")
+        target = require_api_url(url)
         cache_file = self.cache_dir / f"{digest(url.encode())}.json"
         is_metadata = "/indicator/" not in target.path or target.path.startswith("/v2/indicator/")
         if cache_file.exists() and not self.refresh and not is_metadata:
             try:
-                entry = json.loads(cache_file.read_text(encoding="utf-8"))
+                entry = decode_json(read_bounded_file(cache_file, MAX_CACHE_BYTES))
                 body = base64.b64decode(entry["body_base64"], validate=True)
                 if entry["url"] != url or digest(body) != entry["sha256"]:
                     raise ValueError("checksum mismatch")
@@ -148,17 +240,14 @@ class NetworkReader:
                 return result
             except (KeyError, ValueError, OSError, TypeError, RecursionError) as exc:
                 raise EvidenceError("Cache entry failed verification; rerun with --refresh.") from exc
-        self.requests += 1
-        if self.requests > MAX_REQUESTS:
-            raise EvidenceError("Request budget exceeded (30 requests).")
+        self.charge_request()
         try:
             request = Request(url, headers={"Accept": "application/json", "User-Agent": f"EcoEvidence/{__version__}"})
-            with urlopen(request, timeout=self.timeout) as response:
-                final = urlparse(response.geturl())
-                if final.scheme != "https" or final.netloc != "api.worldbank.org":
-                    raise EvidenceError("API redirected outside the official HTTPS origin.")
+            with open_official(request, timeout=self.timeout, charge_redirect=self.charge_request) as response:
+                require_api_url(response.geturl())
                 body = response.read(MAX_BYTES + 1)
         except HTTPError as exc:
+            exc.close()
             raise EvidenceError(f"World Bank HTTP {exc.code}; no bundle was produced. Retry later if rate-limited.") from exc
         except (URLError, TimeoutError, OSError, HTTPException) as exc:
             raise EvidenceError(f"World Bank request failed: {exc}. Check connectivity and trusted TLS certificates.") from exc
@@ -167,10 +256,15 @@ class NetworkReader:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         entry = {"url": url, "retrieved_at": result.retrieved_at, "sha256": digest(body),
                  "body_base64": base64.b64encode(body).decode("ascii")}
-        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=self.cache_dir, delete=False) as handle:
-            json.dump(entry, handle, sort_keys=True)
-            temporary = Path(handle.name)
-        temporary.replace(cache_file)
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=self.cache_dir, delete=False) as handle:
+                temporary = Path(handle.name)
+                json.dump(entry, handle, sort_keys=True)
+            temporary.replace(cache_file)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
         return result
 
 
@@ -178,17 +272,29 @@ class BundleReader:
     """Network-free replay of byte-verified raw responses from a saved bundle."""
 
     def __init__(self, directory):
-        self.directory = Path(directory).resolve()
         try:
-            manifest = json.loads((self.directory / "provenance.json").read_text(encoding="utf-8"))
+            self.directory = Path(directory).resolve()
+            manifest = decode_json(read_bounded_file(self.directory / "provenance.json", MAX_MANIFEST_BYTES))
+            if type(manifest["schema_version"]) is not int or manifest["schema_version"] != 1:
+                raise ValueError("unsupported bundle schema")
             self.origin = manifest["data_origin"]
+            if self.origin not in ("worldbank_api", "synthetic_fixture"):
+                raise ValueError("unknown bundle origin")
             sources = manifest["raw_sources"]
             if not isinstance(sources, list) or not 1 <= len(sources) <= MAX_REQUESTS:
                 raise ValueError("source count")
+            for item in sources:
+                if not isinstance(item, dict):
+                    raise ValueError("invalid raw source")
+                for field in ("url", "file", "retrieved_at", "sha256"):
+                    required_text(item[field], field)
+                require_api_url(item["url"])
+                if not re.fullmatch(r"[0-9a-f]{64}", item["sha256"]):
+                    raise ValueError("invalid source checksum")
             self.sources = {item["url"]: item for item in sources}
             if len(self.sources) != len(sources):
                 raise ValueError("duplicate sources")
-        except (KeyError, ValueError, OSError, TypeError, RecursionError) as exc:
+        except (KeyError, ValueError, OSError, TypeError, RecursionError, RuntimeError) as exc:
             raise EvidenceError("Offline bundle has no valid provenance/source manifest.") from exc
 
     def get(self, url):
@@ -196,16 +302,24 @@ class BundleReader:
             source = self.sources[url]
             filename = (self.directory / source["file"]).resolve()
             filename.relative_to(self.directory)
-            body = filename.read_bytes()
+            body = read_bounded_file(filename, MAX_BYTES)
             if digest(body) != source["sha256"]:
                 raise ValueError("checksum mismatch")
             return Snapshot(url, body, source["retrieved_at"], self.origin)
-        except (KeyError, ValueError, OSError, TypeError) as exc:
+        except (KeyError, ValueError, OSError, TypeError, RuntimeError) as exc:
             raise EvidenceError("Offline source missing or invalid; query must match archived requests and hashes.") from exc
 
 
 def request_url(path, params, page):
     return f"{API_BASE}/{path}?{urlencode({**params, 'format': 'json', 'per_page': PER_PAGE, 'page': page})}"
+
+
+def unreported_empty_response(meta, items):
+    """The WDI API's exact no-records envelope has no revision/source header."""
+    fields = {"page", "pages", "per_page", "total", "sourceid", "lastupdated"}
+    return (set(meta) == fields and items is None
+            and all(type(meta[key]) is int and meta[key] == 0 for key in ("page", "pages", "per_page", "total"))
+            and meta["sourceid"] is None and meta["lastupdated"] is None)
 
 
 def fetch_pages(reader, path, params, snapshots):
@@ -214,6 +328,9 @@ def fetch_pages(reader, path, params, snapshots):
     for page in range(1, MAX_PAGES + 1):
         snapshot = reader.get(request_url(path, params, page))
         meta, items = checked_payload(snapshot)
+        if page == 1 and unreported_empty_response(meta, items):
+            snapshots.append(snapshot)
+            return [], meta
         actual = integer(meta.get("page"), "page", 1)
         pages = integer(meta.get("pages"), "pages")
         total = integer(meta.get("total"), "total")
@@ -248,12 +365,13 @@ def collect(query, reader):
     names = {}
     for country in countries:
         code = country.get("id")
-        if code not in query.countries or code in names:
+        if not isinstance(code, str) or code not in query.countries or code in names:
             raise EvidenceError("Country response contains an unexpected or duplicate code.")
         region = country.get("region")
-        if not isinstance(region, dict) or not region.get("id") or region["id"] == "NA":
+        if (not isinstance(region, dict) or not isinstance(region.get("id"), str)
+                or not region["id"].strip() or region["id"] == "NA"):
             raise EvidenceError("Regional/income aggregates are not country/economy inputs.")
-        names[code] = required_text(country.get("name"), "country name")
+        names[code] = required_text(country.get("name"), "country name", max_bytes=MAX_COUNTRY_NAME_BYTES)
     if set(names) != set(query.countries):
         raise EvidenceError("One or more country codes were not recognized by the World Bank.")
     metadata, _ = fetch_pages(reader, f"indicator/{indicator.code}", {"source": 2}, snapshots)
@@ -261,23 +379,31 @@ def collect(query, reader):
         raise EvidenceError("Expected exactly one indicator metadata record.")
     definition = metadata[0]
     if (definition.get("id") != indicator.code or definition.get("name") != indicator.name
+            or definition.get("unit") != ""
             or not isinstance(definition.get("source"), dict) or definition["source"].get("id") != "2"):
-        raise EvidenceError("Indicator metadata changed or is not WDI; review the registry before export.")
+        raise EvidenceError("Indicator metadata or its unit changed, or is not WDI; review the registry before export.")
     source_note = required_text(definition.get("sourceNote"), "indicator definition")
     source_organization = required_text(definition.get("sourceOrganization"), "source organization")
     observations, header = fetch_pages(reader, f"{country_path}/indicator/{indicator.code}",
                                         {"source": 2, "date": f"{query.start_year}:{query.end_year}"}, snapshots)
-    if header.get("sourceid") != "2":
-        raise EvidenceError("Observation response does not identify WDI source 2.")
+    if not observations and unreported_empty_response(header, None):
+        # Dataset identity is already verified by the indicator metadata above.
+        # The no-records envelope does not report a revision; never invent one.
+        last_updated = None
+    else:
+        if header.get("sourceid") != "2":
+            raise EvidenceError("Observation response does not identify WDI source 2.")
+        last_updated = source_date(header.get("lastupdated"))
     values = {}
     for record in observations:
         code = record.get("countryiso3code")
         year_text = record.get("date")
-        if (code not in names or not isinstance(year_text, str) or not re.fullmatch(r"[0-9]{4}", year_text)
+        if (not isinstance(code, str) or code not in names
+                or not isinstance(year_text, str) or not re.fullmatch(r"[0-9]{4}", year_text)
                 or not query.start_year <= int(year_text) <= query.end_year
                 or not isinstance(record.get("indicator"), dict) or record["indicator"].get("id") != indicator.code
-                or record["indicator"].get("value") != indicator.name):
-            raise EvidenceError("Observation has an unexpected country, year, indicator code or indicator name; review metadata drift.")
+                or record["indicator"].get("value") != indicator.name or record.get("unit") != ""):
+            raise EvidenceError("Observation has an unexpected country, year, indicator or unit; review metadata drift.")
         key = (code, int(year_text))
         if key in values:
             raise EvidenceError("Duplicate country-year observations are not allowed.")
@@ -286,7 +412,8 @@ def collect(query, reader):
         value = record["value"]
         if value is not None and not (type(value) is int or isinstance(value, Decimal) and value.is_finite()):
             raise EvidenceError("Observation value must be a finite JSON number or null.")
-        flag = required_text(record.get("obs_status", ""), "observation status", allow_empty=True)
+        flag = required_text(record.get("obs_status", ""), "observation status", allow_empty=True,
+                             max_bytes=MAX_OBS_STATUS_BYTES)
         values[key] = (value, flag)
     origins = {item.origin for item in snapshots}
     if len(origins) != 1:
@@ -305,11 +432,11 @@ def collect(query, reader):
     provenance = {"schema_version": 1, "tool": "eco-evidence", "tool_version": __version__,
                   "created_at": utc_now(), "query": query.as_dict(), "data_origin": origin,
                   "indicator": {"code": indicator.code, "name": indicator.name, "unit": indicator.unit,
-                                "unit_basis": "curated from official indicator name/definition; API unit may be blank",
+                                "unit_basis": "curated from official indicator name/definition; API unit field verified blank",
                                 "registry_checked_on": CHECKED_ON, "source_note": source_note,
                                 "source_organization": source_organization},
                   "source": {"name": "World Development Indicators", "id": "2",
-                             "last_updated": header.get("lastupdated"), "catalog_url": CATALOG_URL,
+                             "last_updated": last_updated, "catalog_url": CATALOG_URL,
                              "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
                              "terms_url": TERMS_URL},
                   "row_count": len(rows), "counts": {status: sum(row["status"] == status for row in rows)
@@ -340,7 +467,10 @@ def export_bundle(query, reader, output):
             provenance["raw_sources"].append({"url": snapshot.url, "file": filename,
                                                "retrieved_at": snapshot.retrieved_at,
                                                "sha256": digest(snapshot.body)})
-        (temporary / "provenance.json").write_text(json.dumps(provenance, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        manifest_bytes = (json.dumps(provenance, indent=2, sort_keys=True) + "\n").encode("utf-8")
+        if len(manifest_bytes) > MAX_MANIFEST_BYTES:
+            raise EvidenceError("Generated provenance exceeds the 1 MB manifest limit; review source metadata.")
+        (temporary / "provenance.json").write_bytes(manifest_bytes)
         if output.exists():
             raise EvidenceError("Output appeared during retrieval; refusing to replace it.")
         temporary.rename(output)

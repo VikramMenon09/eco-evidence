@@ -2,7 +2,7 @@
 
 Reproducible evidence bundles for economics and environmental research. Start with a small reviewed World Bank indicator registry, retrieve country-year data, and keep the exact source responses next to the tidy CSV. Every bundle records retrieval timestamps, definitions, units, source organizations and content hashes.
 
-This first release is a data foundation for a long-term research resource. It does not infer causality, rank countries or silently fill missing values. Its useful next contributions are documented indicator additions, source checks, validation improvements and reproducible research examples.
+This toolkit is a data foundation for a long-term research resource. It does not infer causality, rank countries or silently fill missing values. Its useful next contributions are documented indicator additions, source checks, validation improvements and reproducible research examples. The [engineering guide](docs/ENGINEERING.md) explains its data flow, trust boundaries, failure behavior and maintenance checks.
 
 ## Run it
 
@@ -10,6 +10,7 @@ Requires Python 3.11 or later. There are **no runtime dependencies**. From this 
 
 ```sh
 python3 -m eco_evidence indicators
+python3 -m eco_evidence --version
 python3 -m eco_evidence fetch --indicator population --countries USA,IND \
   --start-year 2020 --end-year 2022 --output runs/population-2020-2022
 ```
@@ -28,7 +29,7 @@ Installation needs the build backend; running `python3 -m eco_evidence` directly
 
 ## Reviewed indicator registry
 
-Official metadata was checked on **22 November 2026**. Online runs fetch current country and indicator metadata; offline runs validate the archived metadata. Indicator names and source IDs are checked against the registry, and each observation's indicator name must match. A changed name stops export for review, which can catch a renamed unit or base year; changes not reflected in a name still need source review. The API's `unit` field is blank for these series, so the registry explicitly records units derived from official names and definitions.
+Official metadata was checked on **22 November 2026**. Online runs fetch current country and indicator metadata; offline runs validate the archived metadata. Indicator names and source IDs are checked against the registry, and each observation's indicator name must match. The API's `unit` field is blank for these series, so the registry explicitly records units derived from official names and definitions. Both metadata and observation unit fields must remain blank; a changed name or unit field stops export for review. Definition changes not reflected in these fields still need source review.
 
 | Alias | World Bank code | Unit | Meaning and scope |
 | --- | --- | --- | --- |
@@ -59,6 +60,8 @@ your-bundle/
 
 `available` means a source supplied a number; it does not claim a direct measurement rather than an estimate. No interpolation, zero filling, rounding, unit conversion or economic transformation occurs. Decimal JSON numbers are parsed as decimal values rather than binary floats. Original numeric spelling remains available in the raw response.
 
+For a query window with no source records, WDI can return its all-zero pagination/null-data envelope. EcoEvidence accepts that exact complete-empty format after validating country and indicator metadata, and exports every requested country-year as `not_returned`. The source revision date is then `null` because the empty response does not report one; the retrieval timestamp remains available. Partially empty or inconsistent envelopes are rejected.
+
 `provenance.json` contains the canonical query, tool version, export timestamp, source metadata/revision date, row/status counts, the CSV SHA-256, and every raw response URL, original retrieval timestamp, filename and SHA-256. These checks detect accidental changes; they are not a cryptographic signature from the source. The manifest is not self-authenticating: someone able to edit it can change hashes or origin labels. Replay bundles from a trusted custodian, and retain their version-controlled history. The WDI update date is a database date, not the date an individual observation was measured.
 
 ## Offline reproducibility
@@ -87,8 +90,10 @@ Every fixture row is marked `data_origin=synthetic_fixture`. Its values are inve
 
 - Select one reviewed indicator and 1–20 distinct three-letter World Bank country/economy codes. The CLI normalizes letter case. Official country metadata must recognize every code; regional and income aggregates are excluded in this MVP.
 - Years run from 1960 through the current UTC year, in ascending order. An accepted year does not imply data availability.
-- Requests use HTTPS with certificate verification, a default 15-second per-request timeout (configurable from 1–30), at most 30 network requests, ten pages per endpoint and 5 MB per response. There are no automatic retries or unbounded pagination loops.
-- HTTP errors, invalid schemas, duplicate observations, missing identity fields, unexpected indicator names, changed pagination/revision metadata, and non-finite values stop the run. A final output directory is written only after successful validation.
+- Requests use HTTPS with certificate verification. Foreign-host, insecure, credential-bearing and nonstandard-port redirects are rejected before dispatch. Same-origin redirects count toward the 30-request budget. Each endpoint is limited to ten pages and each raw response to 5 MB.
+- The default 15-second timeout (configurable from 1–30) applies to blocking network operations; it is not a total wall-clock deadline for a download. There are no automatic retries or unbounded pagination loops.
+- Local raw responses are capped at 5 MB, cache envelopes at 7 MB and bundle manifests at 1 MB before parsing. Generated manifests use the same 1 MB limit, so an export cannot produce an oversized manifest that its replay reader rejects. Country names are limited to 1,024 UTF-8 bytes and observation flags to 256 bytes to bound text repeated in CSV rows. Pipes and devices are not accepted as archived input. Failed cache writes remove their temporary file and preserve an existing entry when replacement fails.
+- HTTP errors, invalid schemas, ambiguous duplicate JSON fields, duplicate observations, invalid numeric representations, invalid Unicode text, missing identity fields, unexpected indicator names/units, invalid source revision dates and changing pagination/revision metadata stop the run. The CLI reports these input failures without a traceback. A final output directory is written only after successful validation.
 - Cache entries are retained until refreshed. For current research, use `--refresh`; for an exact historical replay, use `--offline`. Independent requests are not an atomic database snapshot: a stable database update label reduces, but cannot eliminate, revision timing risk.
 
 Online runs can combine newly retrieved metadata with older cached observations; every raw timestamp remains explicit. Use `--refresh` when collecting a current research snapshot. New bundle directories are owner-only by default; publish or share their contents using your project's normal sharing process.
@@ -101,7 +106,7 @@ If Python reports a certificate verification failure, configure your Python inst
 python3 -m unittest discover -s tests -v
 ```
 
-The suite uses synthetic, clearly labeled offline responses and mocked HTTP failures. It exercises the actual command entry point, pagination consistency, precise decimal parsing, missing-versus-zero semantics, invalid inputs and schemas, hash-verified offline replay, CSV/provenance agreement, request limits, and incomplete-run cleanup. Tests make no network calls.
+The suite uses synthetic, clearly labeled offline responses and mocked HTTP failures. It exercises the actual command entry point, pagination consistency, precise decimal parsing, missing-versus-zero semantics, invalid inputs and schemas, hash-verified offline replay, CSV/provenance agreement, request limits, and incomplete-run cleanup. Redirect tests run urllib's actual redirect handlers with a fake transport and verify that rejected destinations receive no request. Tests make no network calls.
 
 ## Sources, attribution and licenses
 

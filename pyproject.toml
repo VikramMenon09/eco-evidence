@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eco-evidence"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Reproducible World Bank evidence bundles for environmental economics research"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -15,3 +15,6 @@ eco-evidence = "eco_evidence.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["eco_evidence*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "eco_evidence.__version__"}

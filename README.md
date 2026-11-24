@@ -1,6 +1,6 @@
 # EcoEvidence
 
-Reproducible evidence bundles for economics and environmental research. Start with a small reviewed World Bank indicator registry, retrieve country-year data, and keep the exact source responses next to the tidy CSV. Every bundle records retrieval timestamps, definitions, units, source organizations and content hashes.
+Reproducible evidence bundles and country-year indicator panels for economics and environmental research. Start with a small reviewed World Bank indicator registry, retrieve data, and keep the exact source responses next to the tidy CSV. Every bundle records retrieval timestamps, definitions, units, source organizations and content hashes. Combine archived indicators into a panel that retains unmatched countries and years and reports its coverage.
 
 This toolkit is a data foundation for a long-term research resource. It does not infer causality, rank countries or silently fill missing values. Its useful next contributions are documented indicator additions, source checks, validation improvements and reproducible research examples. The [engineering guide](docs/ENGINEERING.md) explains its data flow, trust boundaries, failure behavior and maintenance checks.
 
@@ -85,6 +85,25 @@ python3 -m eco_evidence fetch --indicator population --countries USA \
 ```
 
 Every fixture row is marked `data_origin=synthetic_fixture`. Its values are invented for testing and must never be cited as country statistics. A live-source bundle uses `worldbank_api`. No source silently falls back to invented values when a request fails.
+
+## Comparable indicator panels
+
+Join **2–3 different indicator bundles** entirely offline:
+
+```sh
+python3 -m eco_evidence panel \
+  --bundle examples/synthetic-population \
+  --bundle examples/synthetic-gdp \
+  --output runs/synthetic-panel
+```
+
+This runnable example contains **invented test data**, not country statistics. It produces seven country-year rows from overlapping queries, with one row having a reported number for both indicators. GDP and population keep their original units. For research, pass your own real `fetch` outputs using the same command.
+
+The output contains `panel.csv`, `coverage.json`, `provenance.json` and self-contained input bundles under `inputs/`. Rows are the **union of country-year keys** from the input queries. Each indicator has separate value, status, unit, country-name and observation-flag columns. A key outside an indicator's query is `not_requested`; this is distinct from `missing`, `not_returned` and a real zero. Nothing is silently dropped, interpolated or converted.
+
+The panel is reconstructed from checksum-verified raw responses. Earlier input `data.csv` files are not read or authenticated by this command. It preserves source metadata, original retrieval timestamps and revision labels in its embedded bundles. Synthetic and live sources cannot be mixed. Joining by country and year does not itself establish that definitions, time coverage or economic concepts are comparable.
+
+See the [panel guide](docs/PANELS.md) for the exact output contract, coverage interpretation and an offline reconstruction command.
 
 ## Validation and failure behavior
 

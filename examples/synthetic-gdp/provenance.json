@@ -1,0 +1,60 @@
+{
+  "counts": {
+    "available": 3,
+    "missing": 1,
+    "not_returned": 2
+  },
+  "created_at": "2026-11-24T03:38:54Z",
+  "csv_sha256": "c5bf1163d471899ff12029a2692ae037e94ceea5689e5f961d7b4fbc5a68b004",
+  "data_origin": "synthetic_fixture",
+  "indicator": {
+    "code": "NY.GDP.MKTP.KD",
+    "name": "GDP (constant 2015 US$)",
+    "registry_checked_on": "2026-11-22",
+    "source_note": "Invented GDP fixture for software tests. These are not economic observations.",
+    "source_organization": "EcoEvidence test authors; synthetic fixture, not World Bank data.",
+    "unit": "constant 2015 US$",
+    "unit_basis": "curated from official indicator name/definition; API unit field verified blank"
+  },
+  "query": {
+    "countries": [
+      "IND",
+      "USA"
+    ],
+    "end_year": 2023,
+    "indicator": "NY.GDP.MKTP.KD",
+    "start_year": 2021
+  },
+  "raw_sources": [
+    {
+      "file": "raw/001.json",
+      "retrieved_at": "2026-11-24T03:38:54Z",
+      "sha256": "c6becc55d15025e2c6bf31acbc4a3efd7fef971a7fd56e539b3d872164ca54e5",
+      "url": "https://api.worldbank.org/v2/country/IND;USA?format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/002.json",
+      "retrieved_at": "2026-11-24T03:38:54Z",
+      "sha256": "9941e6b00db40c5199984f7fb301dac040a5edd6267e1ee8e0c8e231667850f1",
+      "url": "https://api.worldbank.org/v2/indicator/NY.GDP.MKTP.KD?source=2&format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/003.json",
+      "retrieved_at": "2026-11-24T03:38:54Z",
+      "sha256": "54a8a3fcc9d641b66eb53640304cbd2039141a4b6c767a7c16da4aa28f59998b",
+      "url": "https://api.worldbank.org/v2/country/IND;USA/indicator/NY.GDP.MKTP.KD?source=2&date=2021%3A2023&format=json&per_page=1000&page=1"
+    }
+  ],
+  "row_count": 6,
+  "schema_version": 1,
+  "source": {
+    "catalog_url": "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators",
+    "id": "2",
+    "last_updated": "2026-11-23",
+    "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
+    "name": "World Development Indicators",
+    "terms_url": "https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets"
+  },
+  "tool": "eco-evidence",
+  "tool_version": "0.2.0"
+}

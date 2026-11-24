@@ -1,0 +1,7 @@
+country_code,country_name,year,indicator_code,indicator_name,value,unit,status,source_obs_status,data_origin
+IND,Synthetic India for panel tests,2021,NY.GDP.MKTP.KD,GDP (constant 2015 US$),100,constant 2015 US$,available,synthetic,synthetic_fixture
+IND,Synthetic India for panel tests,2022,NY.GDP.MKTP.KD,GDP (constant 2015 US$),0,constant 2015 US$,available,synthetic,synthetic_fixture
+IND,Synthetic India for panel tests,2023,NY.GDP.MKTP.KD,GDP (constant 2015 US$),,constant 2015 US$,not_returned,,synthetic_fixture
+USA,Synthetic United States for panel tests,2021,NY.GDP.MKTP.KD,GDP (constant 2015 US$),,constant 2015 US$,missing,synthetic,synthetic_fixture
+USA,Synthetic United States for panel tests,2022,NY.GDP.MKTP.KD,GDP (constant 2015 US$),12345.67890123456789,constant 2015 US$,available,synthetic,synthetic_fixture
+USA,Synthetic United States for panel tests,2023,NY.GDP.MKTP.KD,GDP (constant 2015 US$),,constant 2015 US$,not_returned,,synthetic_fixture

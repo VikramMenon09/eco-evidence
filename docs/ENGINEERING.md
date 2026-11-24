@@ -26,6 +26,8 @@ flowchart LR
 
 These functions remain in a small core module because they implement one workflow and share one error contract. Readers are passed into collection/export, so offline tests can supply exact bytes without replacing the scientific transformation. The CLI owns presentation and exit codes. Package metadata and provenance use the version in `eco_evidence.__version__`.
 
+`panel.py` composes two or three distinct archived indicators. It validates each recorded canonical query and delegates raw-response validation to `BundleReader` and `collect`. A frozen in-memory reader then supplies those verified snapshots to the existing exporter for self-contained embedded bundles. This keeps source validation in one place and avoids re-reading mutable raw input files while publishing. The original input CSV is not consumed. A sorted outer union preserves every requested country-year key, adds `not_requested` for each unmatched indicator, and counts coverage before staging the final output. See [the panel contract](PANELS.md) for lineage, limits and interpretation. The acquisition module and the daily scheduler do not gain new responsibilities.
+
 ## What is trusted
 
 Online requests are limited to `https://api.worldbank.org` on the default HTTPS port. TLS verification remains enabled. A redirect is checked before the destination is contacted; a final-response origin check remains as a second check. Redirects use the same request budget as initial requests.
@@ -67,12 +69,14 @@ No invented fallback data is substituted after a failed fetch. A final bundle ap
 2. State the invariant that should hold: identity, units, coverage, no network during offline replay, bounded input, or preservation of earlier evidence.
 3. Fix the responsible boundary and add a regression that fails on the previous behavior. Do not replace a behavior check with a test that only repeats implementation details.
 4. Run the core tests and a representative CLI retrieval/replay. If networking changes, verify all registered indicators against the real API with TLS enabled.
-5. Obtain the independent Claude review required by `AGENTS.md`; address material findings, then verify the finished change on the supported CI Python versions. CI builds and installs a wheel, runs `scripts/check_installed.py` with isolated Python mode outside the source checkout, then runs the core and routine suites. The installed check exercises the console command, version parity, synthetic offline replay, hashes/status distinctions and preservation of an earlier output.
+5. Obtain the independent Claude review required by `AGENTS.md`; address material findings, then verify the finished change on the supported CI Python versions. CI builds and installs a wheel, runs `scripts/check_installed.py` with isolated Python mode outside the source checkout, then runs the core and routine suites. The installed check exercises the console command, version parity, synthetic offline replay, hashes/status distinctions and preservation of an earlier output. It also composes the seven-row synthetic panel and reconstructs identical CSV and coverage files from its embedded inputs.
 6. Keep historical example bundles intact. A new source acquisition gets a new directory and timestamps. A code change gets a version update so later provenance identifies its behavior.
 
 The daily scheduler is a separate local operations helper described in [DAILY_ROUTINE.md](DAILY_ROUTINE.md). Research ingestion changes do not require changing the active schedule or its local work record.
 
 CI's direct third-party actions are referenced by immutable commit IDs. When updating them, check the official repository/release, review the change and retain the least permissions needed. Pinning these direct actions does not freeze their transitive dependencies or the build backend; treat successful clean-wheel checks as release evidence rather than assuming a tag or pin proves the whole dependency chain.
+
+CI keeps the Python 3.11/3.13 Linux checks and adds a Python 3.13 macOS job. The macOS run exercises directory aliases that depend on filesystem case and Unicode-normalization behavior; those tests skip when the temporary filesystem treats the spellings as distinct. All jobs build and exercise the installed distribution before running project and routine tests.
 
 ## Engineering references
 

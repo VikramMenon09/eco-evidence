@@ -76,7 +76,48 @@ def main():
             raise RuntimeError("The second command did not refuse the existing output as expected.")
         if original != snapshot():
             raise RuntimeError("Refusing an existing output changed the earlier evidence.")
-    print(f"Installed eco-evidence {installed_version}: replay, provenance and preservation passed.")
+
+        panel_arguments = ["panel", "--bundle", str(fixture), "--bundle",
+                           str(checkout / "examples/synthetic-gdp"), "--output", "panel"]
+        panel_result = json.loads(run(panel_arguments).stdout)
+        panel = Path(directory) / "panel"
+        panel_bytes = (panel / "panel.csv").read_bytes()
+        coverage_bytes = (panel / "coverage.json").read_bytes()
+        panel_manifest = json.loads((panel / "provenance.json").read_text(encoding="utf-8"))
+        coverage = json.loads(coverage_bytes)
+        if (panel_result["rows"] != 7 or panel_result["complete_cases"] != 1
+                or panel_result["indicators"] != ["gdp", "population"]
+                or panel_result["data_origin"] != "synthetic_fixture"):
+            raise RuntimeError("Installed panel CLI summary disagrees with the synthetic example.")
+        if (panel_manifest["tool_version"] != installed_version
+                or panel_manifest["panel_csv_sha256"] != hashlib.sha256(panel_bytes).hexdigest()
+                or panel_manifest["coverage_sha256"] != hashlib.sha256(coverage_bytes).hexdigest()):
+            raise RuntimeError("Installed panel provenance has incorrect version or file checksums.")
+        panel_rows = {(row["country_code"], row["year"]): row
+                      for row in csv.DictReader(io.StringIO(panel_bytes.decode("utf-8")))}
+        if (set(panel_rows) != {("IND", str(year)) for year in range(2021, 2024)}
+                              | {("USA", str(year)) for year in range(2020, 2024)}
+                or panel_rows[("USA", "2022")]["gdp_value"] != "12345.67890123456789"
+                or panel_rows[("USA", "2022")]["population_value"] != "0"):
+            raise RuntimeError("Installed panel lost country-years or exact source numeric values.")
+        expected_counts = {
+            "gdp": {"available": 3, "missing": 1, "not_returned": 2, "not_requested": 1},
+            "population": {"available": 1, "missing": 1, "not_returned": 1, "not_requested": 4},
+        }
+        if (coverage["row_count"] != 7 or coverage["complete_case_count"] != 1
+                or any(coverage["indicators"][alias]["counts"] != counts
+                       for alias, counts in expected_counts.items())):
+            raise RuntimeError("Installed panel coverage collapsed distinct missing-data states.")
+        run(["panel", "--bundle", str(panel / "inputs/gdp"), "--bundle",
+             str(panel / "inputs/population"), "--output", "panel-replay"])
+        for filename, expected in (("panel.csv", panel_bytes), ("coverage.json", coverage_bytes)):
+            if (Path(directory) / "panel-replay" / filename).read_bytes() != expected:
+                raise RuntimeError("Embedded inputs did not reproduce the installed panel exactly.")
+        original = snapshot()
+        refused = run(panel_arguments, expected=2)
+        if (refused.stdout or "Output already exists" not in refused.stderr or original != snapshot()):
+            raise RuntimeError("Panel overwrite refusal failed to preserve existing research.")
+    print(f"Installed eco-evidence {installed_version}: fetch, panel, offline replay and preservation passed.")
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ The aim is a research resource that makes economic and environmental comparisons
 
 ## Next research capabilities
 
-1. **Comparable panels.** Join indicators by ISO country code and year without silently dropping unmatched observations. Report coverage, units, and gaps; test mismatched years and duplicates.
+1. **Comparable panels — implemented in 0.2.0.** [Offline panels](PANELS.md) join two or three archived indicators by country/economy code and year, retain unmatched queries and all missing-data distinctions, report coverage, and embed replayable source bundles. Follow-up extensions should address a demonstrated research need rather than expanding joins speculatively.
 2. **Research-ready metadata.** Expose indicator definitions, source organization, licensing/terms, last-update fields, and revision/vintage changes. Distinguish retrieval dates from source update dates.
 3. **Reproducible worked study.** Create a documented example relating income, energy structure, and environmental outcomes. Use actual sourced data, show missingness, and distinguish descriptive associations from causation.
 4. **A second primary-data adapter.** Evaluate OECD, UN, IEA open data, or another credible source for access and redistribution rights. Implement only after resolving units, identifiers, pagination, rate limits, and coverage.

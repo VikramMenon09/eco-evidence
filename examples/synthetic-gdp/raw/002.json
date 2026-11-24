@@ -1,0 +1,1 @@
+[{"page":1,"pages":1,"per_page":1000,"total":1},[{"id":"NY.GDP.MKTP.KD","name":"GDP (constant 2015 US$)","unit":"","source":{"id":"2"},"sourceNote":"Invented GDP fixture for software tests. These are not economic observations.","sourceOrganization":"EcoEvidence test authors; synthetic fixture, not World Bank data."}]]

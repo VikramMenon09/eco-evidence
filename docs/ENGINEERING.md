@@ -28,6 +28,8 @@ These functions remain in a small core module because they implement one workflo
 
 `panel.py` composes two or three distinct archived indicators. It validates each recorded canonical query and delegates raw-response validation to `BundleReader` and `collect`. A frozen in-memory reader then supplies those verified snapshots to the existing exporter for self-contained embedded bundles. This keeps source validation in one place and avoids re-reading mutable raw input files while publishing. The original input CSV is not consumed. A sorted outer union preserves every requested country-year key, adds `not_requested` for each unmatched indicator, and counts coverage before staging the final output. See [the panel contract](PANELS.md) for lineage, limits and interpretation. The acquisition module and the daily scheduler do not gain new responsibilities.
 
+`archive.py` shares canonical-query reconstruction between panels and `inspection.py`. Inspection reads the verified snapshots and reconstructed rows, qualifies catalog-level licensing separately, and optionally compares two identical queries and origins. It compares source update labels independently from exact decimal values, missingness, names and flags. No export timestamp is used to infer a data revision. Report generation is deterministic and read-only; the text renderer escapes source strings. See [the inspection contract](INSPECTION.md) for counts, source-date interpretation and report limits.
+
 ## What is trusted
 
 Online requests are limited to `https://api.worldbank.org` on the default HTTPS port. TLS verification remains enabled. A redirect is checked before the destination is contacted; a final-response origin check remains as a second check. Redirects use the same request budget as initial requests.
@@ -71,6 +73,8 @@ No invented fallback data is substituted after a failed fetch. A final bundle ap
 4. Run the core tests and a representative CLI retrieval/replay. If networking changes, verify all registered indicators against the real API with TLS enabled.
 5. Obtain the independent Claude review required by `AGENTS.md`; address material findings, then verify the finished change on the supported CI Python versions. CI builds and installs a wheel, runs `scripts/check_installed.py` with isolated Python mode outside the source checkout, then runs the core and routine suites. The installed check exercises the console command, version parity, synthetic offline replay, hashes/status distinctions and preservation of an earlier output. It also composes the seven-row synthetic panel and reconstructs identical CSV and coverage files from its embedded inputs.
 6. Keep historical example bundles intact. A new source acquisition gets a new directory and timestamps. A code change gets a version update so later provenance identifies its behavior.
+
+The installed check also inspects an archived replay, compares the revised synthetic population fixture, checks its two status transitions and one numerical revision despite an unchanged update label, and rejects an incompatible baseline without changing inputs. Inspection regressions exercise definition/provider differences, exact decimal equivalence, unknown source updates, raw-response changes and corrupt archives.
 
 The daily scheduler is a separate local operations helper described in [DAILY_ROUTINE.md](DAILY_ROUTINE.md). Research ingestion changes do not require changing the active schedule or its local work record.
 

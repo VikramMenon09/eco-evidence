@@ -7,6 +7,7 @@ import sys
 
 from . import __version__
 from .core import BundleReader, EvidenceError, NetworkReader, Query, export_bundle
+from .inspection import inspect_bundle, render_text
 from .panel import export_panel
 from .registry import INDICATORS
 
@@ -31,12 +32,25 @@ def main(argv=None):
                        help="Input evidence bundle; repeat for each distinct indicator")
     panel.add_argument("--output", type=Path, required=True,
                        help="New panel directory; includes coverage and replayable input bundles")
+    inspect = commands.add_parser("inspect", help="Inspect archived metadata and compare source vintages offline.")
+    inspect.add_argument("--bundle", type=Path, required=True, help="Indicator evidence bundle to inspect")
+    inspect.add_argument("--baseline", type=Path,
+                         help="Reference bundle with the exact same query; compares baseline to bundle")
+    inspect.add_argument("--format", choices=("text", "json"), default="text",
+                         help="Report format on stdout (default: text); never writes inside an archive")
     args = parser.parse_args(argv)
     if args.command == "indicators":
         for item in INDICATORS:
             print(f"{item.alias:12} {item.code:18} {item.unit}\n  {item.name}\n  {item.metadata_url}")
         return 0
     try:
+        if args.command == "inspect":
+            report = inspect_bundle(args.bundle, args.baseline)
+            if args.format == "json":
+                print(json.dumps(report, indent=2, sort_keys=True))
+            else:
+                print(render_text(report), end="")
+            return 0
         if args.command == "panel":
             provenance = export_panel(args.bundle, args.output)
             print(json.dumps({"output": str(args.output.resolve()), "rows": provenance["row_count"],

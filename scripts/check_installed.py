@@ -28,6 +28,14 @@ def main():
     environment.pop("PYTHONHOME", None)
     environment["PYTHONNOUSERSITE"] = "1"
     fixture = checkout / "examples" / "synthetic-population"
+    input_directories = (fixture, checkout / "examples/synthetic-gdp",
+                         checkout / "examples/synthetic-population-revised")
+
+    def fixture_snapshot():
+        return {path.relative_to(checkout): path.read_bytes() if path.is_file() else None
+                for directory in input_directories for path in (directory, *directory.rglob("*"))}
+
+    original_fixtures = fixture_snapshot()
     installed_version = version("eco-evidence")
     if eco_evidence.__version__ != installed_version:
         raise RuntimeError("Package metadata and runtime versions disagree.")
@@ -117,7 +125,32 @@ def main():
         refused = run(panel_arguments, expected=2)
         if (refused.stdout or "Output already exists" not in refused.stderr or original != snapshot()):
             raise RuntimeError("Panel overwrite refusal failed to preserve existing research.")
-    print(f"Installed eco-evidence {installed_version}: fetch, panel, offline replay and preservation passed.")
+
+        inspection = json.loads(run(["inspect", "--bundle", str(bundle), "--baseline",
+                                     str(fixture), "--format", "json"]).stdout)
+        if (inspection["tool_version"] != installed_version
+                or inspection["bundle"]["data_origin"] != "synthetic_fixture"
+                or inspection["bundle"]["indicator"]["unit"] != "people"
+                or inspection["comparison"]["changed_row_count"] != 0
+                or inspection["comparison"]["metadata_changes"]):
+            raise RuntimeError("Installed inspection changed the meaning of an archived replay.")
+        revised_fixture = checkout / "examples/synthetic-population-revised"
+        revision = json.loads(run(["inspect", "--bundle", str(revised_fixture),
+                                   "--baseline", str(fixture), "--format", "json"]).stdout)["comparison"]
+        if (revision["changed_row_count"] != 3 or revision["numeric_value_change_count"] != 1
+                or revision["row_field_change_counts"]["status"] != 2
+                or revision["source_update_changed"]):
+            raise RuntimeError("Installed inspection confused source dates, values or missing-data revisions.")
+        text = run(["inspect", "--bundle", str(bundle)]).stdout
+        if "SP.POP.TOTL" not in text or "synthetic_fixture" not in text:
+            raise RuntimeError("Installed inspection text omitted source identity or origin.")
+        refused = run(["inspect", "--bundle", str(bundle), "--baseline",
+                       str(checkout / "examples/synthetic-gdp"), "--format", "json"], expected=2)
+        if refused.stdout or "Traceback" in refused.stderr or original != snapshot():
+            raise RuntimeError("Inspection changed inputs or failed to reject incomparable queries cleanly.")
+        if fixture_snapshot() != original_fixtures:
+            raise RuntimeError("An installed command changed one of the original example archives.")
+    print(f"Installed eco-evidence {installed_version}: fetch, panel, inspect, offline replay and preservation passed.")
 
 
 if __name__ == "__main__":

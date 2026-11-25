@@ -12,13 +12,12 @@ import shutil
 import tempfile
 
 from . import __version__
-from .core import (BundleReader, EvidenceError, MAX_MANIFEST_BYTES, Query, collect,
-                   decode_json, digest, export_bundle, read_bounded_file, utc_now)
-from .registry import get_indicator
+from .archive import read_bundle
+from .core import (EvidenceError, MAX_MANIFEST_BYTES, digest, export_bundle,
+                   read_bounded_file, utc_now)
 
 STATUSES = ("available", "missing", "not_returned", "not_requested")
 VALUE_FIELDS = ("value", "status", "unit", "country_name", "source_obs_status")
-QUERY_FIELDS = {"indicator", "countries", "start_year", "end_year"}
 MAX_PANEL_INPUTS = 3
 
 
@@ -35,40 +34,6 @@ class _FrozenReader:
             return self.snapshots[url]
         except KeyError as exc:
             raise EvidenceError("Reconstructed panel input has no matching source request.") from exc
-
-
-def _read_input(directory):
-    """Validate the recorded query and reconstruct source data, not cached CSV."""
-    try:
-        directory = Path(directory).resolve()
-        manifest_bytes = read_bounded_file(directory / "provenance.json", MAX_MANIFEST_BYTES)
-        manifest = decode_json(manifest_bytes)
-        if not isinstance(manifest, dict):
-            raise ValueError("manifest must be an object")
-        recorded = manifest["query"]
-        if not isinstance(recorded, dict) or set(recorded) != QUERY_FIELDS:
-            raise ValueError("query fields must match the bundle query contract")
-        if not isinstance(recorded["countries"], list) or not isinstance(recorded["indicator"], str):
-            raise ValueError("query field types")
-        query = Query(recorded["indicator"], tuple(recorded["countries"]),
-                      recorded["start_year"], recorded["end_year"])
-        if query.as_dict() != recorded:
-            raise ValueError("query must use canonical indicator code and sorted country codes")
-        reader = BundleReader(directory)
-        # The query and the raw-response catalog must belong to the same manifest.
-        # Concurrent modifications are unsupported; detect a changed catalog before
-        # collecting rather than combining two observed manifest versions.
-        if read_bounded_file(directory / "provenance.json", MAX_MANIFEST_BYTES) != manifest_bytes:
-            raise ValueError("input manifest changed while it was being opened")
-        rows, provenance, snapshots = collect(query, reader)
-    except EvidenceError as exc:
-        raise EvidenceError(f"Panel input {directory}: {exc}") from exc
-    except (KeyError, TypeError, ValueError, OSError, RuntimeError) as exc:
-        raise EvidenceError(f"Panel input is not a valid replayable indicator bundle: {directory}.") from exc
-    return {"directory": directory, "query": query, "rows": rows,
-            "provenance": provenance, "snapshots": snapshots,
-            "alias": get_indicator(query.indicator).alias,
-            "original_manifest_sha256": digest(manifest_bytes)}
 
 
 def _json_bytes(value):
@@ -117,7 +82,7 @@ def export_panel(bundle_paths, output):
         raise EvidenceError("Panel output must be a valid new directory path.") from exc
     if output.exists() or output.is_symlink():
         raise EvidenceError("Output already exists; choose a new directory to preserve earlier evidence.")
-    inputs = [_read_input(directory) for directory in bundle_paths]
+    inputs = [read_bundle(directory) for directory in bundle_paths]
     inputs.sort(key=lambda item: item["alias"])
     aliases = [item["alias"] for item in inputs]
     if len(set(aliases)) != len(aliases):

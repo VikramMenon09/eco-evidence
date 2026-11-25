@@ -105,6 +105,22 @@ The panel is reconstructed from checksum-verified raw responses. Earlier input `
 
 See the [panel guide](docs/PANELS.md) for the exact output contract, coverage interpretation and an offline reconstruction command.
 
+## Inspect metadata and compare archives
+
+Read an archived indicator's definitions, original provider, units, coverage and source dates without making network requests:
+
+```sh
+python3 -m eco_evidence inspect --bundle examples/synthetic-population
+python3 -m eco_evidence inspect --bundle examples/synthetic-population-revised \
+  --baseline examples/synthetic-population --format json
+```
+
+The comparison example is **invented test data**. It shows three changed country-years, including two status transitions and one change between reported numbers, even though the database update label is unchanged. For actual research, use two real bundles collected with the same indicator, countries and years. `--baseline` defines the comparison direction; it does not establish chronological order.
+
+Inspection reconstructs the raw responses instead of trusting an earlier CSV or its metadata summary. It distinguishes a changed definition, provider or database update label from changed values, missingness, observation flags and country names. Exact decimal comparison separates numerical changes from representation changes such as `1` versus `1.00`. Every raw response retains its own retrieval timestamp and hash. Catalog-level licensing context is labeled separately from metadata actually reported by the API; no indicator-specific reuse permission is inferred.
+
+Text is the default; `--format json` emits a complete deterministic report on stdout. Inspection never writes to a bundle. See the [inspection guide](docs/INSPECTION.md) for report fields, source-date interpretation and a fresh-data comparison workflow.
+
 ## Validation and failure behavior
 
 - Select one reviewed indicator and 1–20 distinct three-letter World Bank country/economy codes. The CLI normalizes letter case. Official country metadata must recognize every code; regional and income aggregates are excluded in this MVP.

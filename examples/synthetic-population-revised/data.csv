@@ -1,0 +1,4 @@
+country_code,country_name,year,indicator_code,indicator_name,value,unit,status,source_obs_status,data_origin
+USA,"Synthetic example, economy",2020,SP.POP.TOTL,"Population, total",,people,missing,,synthetic_fixture
+USA,"Synthetic example, economy",2021,SP.POP.TOTL,"Population, total",42,people,available,,synthetic_fixture
+USA,"Synthetic example, economy",2022,SP.POP.TOTL,"Population, total",10,people,available,,synthetic_fixture

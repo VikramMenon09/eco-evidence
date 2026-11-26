@@ -29,7 +29,8 @@ def main():
     environment["PYTHONNOUSERSITE"] = "1"
     fixture = checkout / "examples" / "synthetic-population"
     input_directories = (fixture, checkout / "examples/synthetic-gdp",
-                         checkout / "examples/synthetic-population-revised")
+                         checkout / "examples/synthetic-population-revised",
+                         checkout / "examples/output-energy-study")
 
     def fixture_snapshot():
         return {path.relative_to(checkout): path.read_bytes() if path.is_file() else None
@@ -148,9 +149,36 @@ def main():
                        str(checkout / "examples/synthetic-gdp"), "--format", "json"], expected=2)
         if refused.stdout or "Traceback" in refused.stderr or original != snapshot():
             raise RuntimeError("Inspection changed inputs or failed to reject incomparable queries cleanly.")
+
+        study_example = checkout / "examples/output-energy-study"
+
+        def study_arguments(inputs, output):
+            return ["study", "--gdp-bundle", str(inputs / "gdp"), "--population-bundle",
+                    str(inputs / "population"), "--renewables-bundle", str(inputs / "renewables"),
+                    "--output", str(output)]
+
+        study = Path(directory) / "study"
+        study_result = json.loads(run(study_arguments(study_example / "inputs", study)).stdout)
+        if (study_result["rows"], study_result["derived"], study_result["complete_pairs"], study_result["data_origin"]) != (30, 30, 18, "worldbank_api"):
+            raise RuntimeError("Installed worked study changed coverage or source origin.")
+        study_manifest = json.loads((study / "provenance.json").read_text(encoding="utf-8"))
+        if study_manifest["tool_version"] != installed_version:
+            raise RuntimeError("Study records the wrong installed version.")
+        study_replay = Path(directory) / "study-replay"
+        run(study_arguments(study / "inputs", study_replay))
+        for filename, hash_key in (("study.csv", "study_csv_sha256"), ("summary.json", "summary_sha256")):
+            content = (study / filename).read_bytes()
+            if (content != (study_example / filename).read_bytes()
+                    or content != (study_replay / filename).read_bytes()
+                    or hashlib.sha256(content).hexdigest() != study_manifest[hash_key]):
+                raise RuntimeError("Installed study cannot reproduce its archived calculation and coverage.")
+        original = snapshot()
+        refused = run(study_arguments(study_example / "inputs", study), expected=2)
+        if refused.stdout or "Output already exists" not in refused.stderr or original != snapshot():
+            raise RuntimeError("Study overwrite refusal did not preserve earlier research.")
         if fixture_snapshot() != original_fixtures:
             raise RuntimeError("An installed command changed one of the original example archives.")
-    print(f"Installed eco-evidence {installed_version}: fetch, panel, inspect, offline replay and preservation passed.")
+    print(f"Installed eco-evidence {installed_version}: fetch, panel, inspect, study, offline replay and preservation passed.")
 
 
 if __name__ == "__main__":

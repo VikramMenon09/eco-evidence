@@ -1,0 +1,31 @@
+country_code,country_name,year,indicator_code,indicator_name,value,unit,status,source_obs_status,data_origin
+BRA,Brazil,2019,SP.POP.TOTL,"Population, total",207455459,people,available,,worldbank_api
+BRA,Brazil,2020,SP.POP.TOTL,"Population, total",208660842,people,available,,worldbank_api
+BRA,Brazil,2021,SP.POP.TOTL,"Population, total",209550294,people,available,,worldbank_api
+BRA,Brazil,2022,SP.POP.TOTL,"Population, total",210306415,people,available,,worldbank_api
+BRA,Brazil,2023,SP.POP.TOTL,"Population, total",211140729,people,available,,worldbank_api
+CAN,Canada,2019,SP.POP.TOTL,"Population, total",37618495,people,available,,worldbank_api
+CAN,Canada,2020,SP.POP.TOTL,"Population, total",38028638,people,available,,worldbank_api
+CAN,Canada,2021,SP.POP.TOTL,"Population, total",38239864,people,available,,worldbank_api
+CAN,Canada,2022,SP.POP.TOTL,"Population, total",38950132,people,available,,worldbank_api
+CAN,Canada,2023,SP.POP.TOTL,"Population, total",40049088,people,available,,worldbank_api
+DEU,Germany,2019,SP.POP.TOTL,"Population, total",83092962,people,available,,worldbank_api
+DEU,Germany,2020,SP.POP.TOTL,"Population, total",83160871,people,available,,worldbank_api
+DEU,Germany,2021,SP.POP.TOTL,"Population, total",83196078,people,available,,worldbank_api
+DEU,Germany,2022,SP.POP.TOTL,"Population, total",83177813,people,available,,worldbank_api
+DEU,Germany,2023,SP.POP.TOTL,"Population, total",83287273,people,available,,worldbank_api
+IND,India,2019,SP.POP.TOTL,"Population, total",1389030312,people,available,,worldbank_api
+IND,India,2020,SP.POP.TOTL,"Population, total",1402617695,people,available,,worldbank_api
+IND,India,2021,SP.POP.TOTL,"Population, total",1414203896,people,available,,worldbank_api
+IND,India,2022,SP.POP.TOTL,"Population, total",1425423212,people,available,,worldbank_api
+IND,India,2023,SP.POP.TOTL,"Population, total",1438069596,people,available,,worldbank_api
+USA,United States,2019,SP.POP.TOTL,"Population, total",330226227,people,available,,worldbank_api
+USA,United States,2020,SP.POP.TOTL,"Population, total",331578104,people,available,,worldbank_api
+USA,United States,2021,SP.POP.TOTL,"Population, total",332100166,people,available,,worldbank_api
+USA,United States,2022,SP.POP.TOTL,"Population, total",333996304,people,available,,worldbank_api
+USA,United States,2023,SP.POP.TOTL,"Population, total",336755052,people,available,,worldbank_api
+ZAF,South Africa,2019,SP.POP.TOTL,"Population, total",59587885,people,available,,worldbank_api
+ZAF,South Africa,2020,SP.POP.TOTL,"Population, total",60562381,people,available,,worldbank_api
+ZAF,South Africa,2021,SP.POP.TOTL,"Population, total",61502603,people,available,,worldbank_api
+ZAF,South Africa,2022,SP.POP.TOTL,"Population, total",62378410,people,available,,worldbank_api
+ZAF,South Africa,2023,SP.POP.TOTL,"Population, total",63212384,people,available,,worldbank_api

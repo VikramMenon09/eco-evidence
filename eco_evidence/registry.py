@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 API_BASE = "https://api.worldbank.org/v2"
 CATALOG_URL = "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators"
-TERMS_URL = "https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets"
+TERMS_URL = "https://www.worldbank.org/ext/en/legal/terms-conditions/datasets"
 CHECKED_ON = "2026-11-22"
 
 

@@ -1,6 +1,6 @@
 # Understanding and maintaining EcoEvidence
 
-EcoEvidence has one job: turn a reviewed country/year query into an auditable evidence bundle. The scientific boundary is explicit: it retrieves and validates source data, but does not estimate missing observations or interpret an association as a causal effect.
+EcoEvidence turns reviewed country/year queries into auditable evidence bundles and reproducible comparisons. The scientific boundary is explicit: it validates source data and records any arithmetic separately, without estimating missing observations or interpreting an association as a causal effect.
 
 ## Data flow
 
@@ -29,6 +29,8 @@ These functions remain in a small core module because they implement one workflo
 `panel.py` composes two or three distinct archived indicators. It validates each recorded canonical query and delegates raw-response validation to `BundleReader` and `collect`. A frozen in-memory reader then supplies those verified snapshots to the existing exporter for self-contained embedded bundles. This keeps source validation in one place and avoids re-reading mutable raw input files while publishing. The original input CSV is not consumed. A sorted outer union preserves every requested country-year key, adds `not_requested` for each unmatched indicator, and counts coverage before staging the final output. See [the panel contract](PANELS.md) for lineage, limits and interpretation. The acquisition module and the daily scheduler do not gain new responsibilities.
 
 `archive.py` shares canonical-query reconstruction between panels and `inspection.py`. Inspection reads the verified snapshots and reconstructed rows, qualifies catalog-level licensing separately, and optionally compares two identical queries and origins. It compares source update labels independently from exact decimal values, missingness, names and flags. No export timestamp is used to infer a data revision. Report generation is deterministic and read-only; the text renderer escapes source strings. See [the inspection contract](INSPECTION.md) for counts, source-date interpretation and report limits.
+
+`study.py` combines three explicitly selected, matching indicator archives into a [worked output-and-energy comparison](OUTPUT_ENERGY_STUDY.md). It retains all original cells and calculates GDP/population with an isolated 28-significant-digit Decimal context. Missing operands and zero population have explicit reasons; unsupported domains or numeric ranges fail the export. Renewable missingness does not suppress a valid GDP-per-person calculation. Per-year coverage and embedded raw inputs make the selected sample and reproduction path explicit. No statistical inference is performed.
 
 ## What is trusted
 
@@ -75,6 +77,8 @@ No invented fallback data is substituted after a failed fetch. A final bundle ap
 6. Keep historical example bundles intact. A new source acquisition gets a new directory and timestamps. A code change gets a version update so later provenance identifies its behavior.
 
 The installed check also inspects an archived replay, compares the revised synthetic population fixture, checks its two status transitions and one numerical revision despite an unchanged update label, and rejects an incompatible baseline without changing inputs. Inspection regressions exercise definition/provider differences, exact decimal equivalence, unknown source updates, raw-response changes and corrupt archives.
+
+The worked-study check reproduces the licensed six-country example and then replays from its embedded inputs, checking exact CSV/summary bytes, output hashes, version, coverage and overwrite refusal. Source and installed journeys both retain the later years with missing renewable observations. Synthetic tests cover zero population, exact decimal rounding, hostile ambient contexts, invalid domains, numeric bounds and output preservation.
 
 The daily scheduler is a separate local operations helper described in [DAILY_ROUTINE.md](DAILY_ROUTINE.md). Research ingestion changes do not require changing the active schedule or its local work record.
 

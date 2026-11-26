@@ -10,6 +10,7 @@ from .core import BundleReader, EvidenceError, NetworkReader, Query, export_bund
 from .inspection import inspect_bundle, render_text
 from .panel import export_panel
 from .registry import INDICATORS
+from .study import export_study
 
 
 def main(argv=None):
@@ -38,12 +39,24 @@ def main(argv=None):
                          help="Reference bundle with the exact same query; compares baseline to bundle")
     inspect.add_argument("--format", choices=("text", "json"), default="text",
                          help="Report format on stdout (default: text); never writes inside an archive")
+    study = commands.add_parser("study", help="Compare output per person with renewable energy shares offline.")
+    study.add_argument("--gdp-bundle", type=Path, required=True)
+    study.add_argument("--population-bundle", type=Path, required=True)
+    study.add_argument("--renewables-bundle", type=Path, required=True)
+    study.add_argument("--output", type=Path, required=True,
+                       help="New study directory; retains source inputs and all requested country-years")
     args = parser.parse_args(argv)
     if args.command == "indicators":
         for item in INDICATORS:
             print(f"{item.alias:12} {item.code:18} {item.unit}\n  {item.name}\n  {item.metadata_url}")
         return 0
     try:
+        if args.command == "study":
+            provenance = export_study(args.gdp_bundle, args.population_bundle, args.renewables_bundle, args.output)
+            print(json.dumps({"output": str(args.output.resolve()), "rows": provenance["row_count"],
+                              "derived": provenance["derived_count"], "complete_pairs": provenance["pair_complete_count"],
+                              "data_origin": provenance["data_origin"]}, sort_keys=True))
+            return 0
         if args.command == "inspect":
             report = inspect_bundle(args.bundle, args.baseline)
             if args.format == "json":

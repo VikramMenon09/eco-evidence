@@ -1,0 +1,64 @@
+{
+  "counts": {
+    "available": 30,
+    "missing": 0,
+    "not_returned": 0
+  },
+  "created_at": "2026-11-26T06:41:15Z",
+  "csv_sha256": "249976db3c44246852cd791393dff923a10f31f63bef21cea87c324ee77fda32",
+  "data_origin": "worldbank_api",
+  "indicator": {
+    "code": "SP.POP.TOTL",
+    "name": "Population, total",
+    "registry_checked_on": "2026-11-22",
+    "source_note": "Total population is based on the de facto definition of population, which counts all residents regardless of legal status or citizenship. The values shown are midyear estimates.",
+    "source_organization": "World Population Prospects, United Nations (UN), uri: https://population.un.org/wpp/, publisher: UN Population Division;\nStatistical databases and publications from national statistical offices, National Statistical Offices (NSOs), uri: https://unstats.un.org/home/nso_sites/, publisher: National Statistical Offices;\nEurostat: Demographic Statistics, Eurostat (ESTAT), uri: https://ec.europa.eu/eurostat/data/database?node_code=earn_ses_monthly, publisher: Eurostat;\nPopulation and Vital Statistics Report (various years), United Nations (UN), uri: https://unstats.un.org, publisher: UN Statistics Division",
+    "unit": "people",
+    "unit_basis": "curated from official indicator name/definition; API unit field verified blank"
+  },
+  "query": {
+    "countries": [
+      "BRA",
+      "CAN",
+      "DEU",
+      "IND",
+      "USA",
+      "ZAF"
+    ],
+    "end_year": 2023,
+    "indicator": "SP.POP.TOTL",
+    "start_year": 2019
+  },
+  "raw_sources": [
+    {
+      "file": "raw/001.json",
+      "retrieved_at": "2026-11-26T06:28:34Z",
+      "sha256": "737199f5a06ccd8dad46c7b9a0f5f26f729f341c5f112676fbfc5b53985db313",
+      "url": "https://api.worldbank.org/v2/country/BRA;CAN;DEU;IND;USA;ZAF?format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/002.json",
+      "retrieved_at": "2026-11-26T06:28:35Z",
+      "sha256": "689a8664399394b9d35c831ee21f7406a8e059acc3be5fc3da02313f5562dd63",
+      "url": "https://api.worldbank.org/v2/indicator/SP.POP.TOTL?source=2&format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/003.json",
+      "retrieved_at": "2026-11-26T06:28:35Z",
+      "sha256": "e0376db26b2c0f5c1f94bda0a2b489982bab8004dff8978513a7572f83718afb",
+      "url": "https://api.worldbank.org/v2/country/BRA;CAN;DEU;IND;USA;ZAF/indicator/SP.POP.TOTL?source=2&date=2019%3A2023&format=json&per_page=1000&page=1"
+    }
+  ],
+  "row_count": 30,
+  "schema_version": 1,
+  "source": {
+    "catalog_url": "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators",
+    "id": "2",
+    "last_updated": "2026-11-11",
+    "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
+    "name": "World Development Indicators",
+    "terms_url": "https://www.worldbank.org/ext/en/legal/terms-conditions/datasets"
+  },
+  "tool": "eco-evidence",
+  "tool_version": "0.4.0"
+}

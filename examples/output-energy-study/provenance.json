@@ -1,0 +1,170 @@
+{
+  "artifact_type": "output_per_person_study",
+  "calculation": {
+    "exponent_scope": "GDP and population operands and their quotient; computation support limits, not economic plausibility bounds.",
+    "formula": "NY.GDP.MKTP.KD / SP.POP.TOTL",
+    "name": "GDP per person",
+    "nonzero_operand_adjusted_exponent_range": [
+      -100,
+      100
+    ],
+    "nonzero_result_adjusted_exponent_range": [
+      -100,
+      100
+    ],
+    "precision_significant_digits": 28,
+    "rounding": "ROUND_HALF_EVEN",
+    "trapped_signals": [
+      "InvalidOperation",
+      "DivisionByZero",
+      "Overflow",
+      "Underflow",
+      "Subnormal",
+      "Clamped"
+    ],
+    "unit": "constant 2015 US$ per person",
+    "zero_numerator": "A reported GDP of zero with a positive population derives the exact string 0."
+  },
+  "created_at": "2026-11-26T06:41:15Z",
+  "data_origin": "worldbank_api",
+  "derived_count": 30,
+  "domain_policy": "Available GDP and population must be nonnegative; available renewable shares must be in [0, 100]. Invalid values reject the whole export. Zero population is retained with population_zero exclusion.",
+  "input_data_policy": "Reconstruct source rows from verified archived raw responses; derived input CSV files and manifest summaries are not treated as evidence.",
+  "inputs": [
+    {
+      "alias": "gdp",
+      "bundle_path": "inputs/gdp",
+      "data_origin": "worldbank_api",
+      "embedded_manifest_sha256": "58c716c1c423c204d1b3fee99160cff7e5a2d3fa2610bc7e2890aa58e864e697",
+      "indicator": {
+        "code": "NY.GDP.MKTP.KD",
+        "name": "GDP (constant 2015 US$)",
+        "registry_checked_on": "2026-11-22",
+        "source_note": "Gross domestic product is the total income earned through the production of goods and services in an economic territory during an accounting period. It can be measured in three different ways: using either the expenditure approach, the income approach, or the production approach. This indicator is expressed in constant prices, meaning the series has been adjusted to account for price changes over time. The reference year for this adjustment is 2015. This indicator is expressed in United States dollars.",
+        "source_organization": "Country official statistics, National Statistical Organizations and/or Central Banks;\nNational Accounts data files, Organisation for Economic Co-operation and Development (OECD);\nStaff estimates, World Bank (WB)",
+        "unit": "constant 2015 US$",
+        "unit_basis": "curated from official indicator name/definition; API unit field verified blank"
+      },
+      "original_manifest_sha256": "3b0a5929fec1d7205e48fdc66dcce49f2849cf07fb3de0dceacdfca47ba97e27",
+      "query": {
+        "countries": [
+          "BRA",
+          "CAN",
+          "DEU",
+          "IND",
+          "USA",
+          "ZAF"
+        ],
+        "end_year": 2023,
+        "indicator": "NY.GDP.MKTP.KD",
+        "start_year": 2019
+      },
+      "source": {
+        "catalog_url": "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators",
+        "id": "2",
+        "last_updated": "2026-11-11",
+        "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
+        "name": "World Development Indicators",
+        "terms_url": "https://www.worldbank.org/ext/en/legal/terms-conditions/datasets"
+      }
+    },
+    {
+      "alias": "population",
+      "bundle_path": "inputs/population",
+      "data_origin": "worldbank_api",
+      "embedded_manifest_sha256": "18b3308afad6560237b00e8a512b654179e5549fe54b4ca5b0b73baf1d0fab8f",
+      "indicator": {
+        "code": "SP.POP.TOTL",
+        "name": "Population, total",
+        "registry_checked_on": "2026-11-22",
+        "source_note": "Total population is based on the de facto definition of population, which counts all residents regardless of legal status or citizenship. The values shown are midyear estimates.",
+        "source_organization": "World Population Prospects, United Nations (UN), uri: https://population.un.org/wpp/, publisher: UN Population Division;\nStatistical databases and publications from national statistical offices, National Statistical Offices (NSOs), uri: https://unstats.un.org/home/nso_sites/, publisher: National Statistical Offices;\nEurostat: Demographic Statistics, Eurostat (ESTAT), uri: https://ec.europa.eu/eurostat/data/database?node_code=earn_ses_monthly, publisher: Eurostat;\nPopulation and Vital Statistics Report (various years), United Nations (UN), uri: https://unstats.un.org, publisher: UN Statistics Division",
+        "unit": "people",
+        "unit_basis": "curated from official indicator name/definition; API unit field verified blank"
+      },
+      "original_manifest_sha256": "276870c875e6b539c990202976c12ba46ea77a53af26d613a9604337e6ed1a36",
+      "query": {
+        "countries": [
+          "BRA",
+          "CAN",
+          "DEU",
+          "IND",
+          "USA",
+          "ZAF"
+        ],
+        "end_year": 2023,
+        "indicator": "SP.POP.TOTL",
+        "start_year": 2019
+      },
+      "source": {
+        "catalog_url": "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators",
+        "id": "2",
+        "last_updated": "2026-11-11",
+        "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
+        "name": "World Development Indicators",
+        "terms_url": "https://www.worldbank.org/ext/en/legal/terms-conditions/datasets"
+      }
+    },
+    {
+      "alias": "renewables",
+      "bundle_path": "inputs/renewables",
+      "data_origin": "worldbank_api",
+      "embedded_manifest_sha256": "459af1f5524675eafa17cd41fa782f0284d9afc8b9a0b554d677b00ae785906c",
+      "indicator": {
+        "code": "EG.FEC.RNEW.ZS",
+        "name": "Renewable energy consumption (% of total final energy consumption)",
+        "registry_checked_on": "2026-11-22",
+        "source_note": "Renewable energy consumption is the share of renewable energy in total final energy consumption.",
+        "source_organization": "IEA Energy Statistics Data Browser, International Energy Agency (IEA), uri: https://www.iea.org/data-and-statistics/data-tools/energy-statistics-data-browser, publisher: International Energy Agency (IEA), date accessed: 2025-03-25",
+        "unit": "% of total final energy consumption",
+        "unit_basis": "curated from official indicator name/definition; API unit field verified blank"
+      },
+      "original_manifest_sha256": "463680140cadb5fa520582ea6b9bae51874384c43d23f350db8752c1a3c37642",
+      "query": {
+        "countries": [
+          "BRA",
+          "CAN",
+          "DEU",
+          "IND",
+          "USA",
+          "ZAF"
+        ],
+        "end_year": 2023,
+        "indicator": "EG.FEC.RNEW.ZS",
+        "start_year": 2019
+      },
+      "source": {
+        "catalog_url": "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators",
+        "id": "2",
+        "last_updated": "2026-11-11",
+        "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
+        "name": "World Development Indicators",
+        "terms_url": "https://www.worldbank.org/ext/en/legal/terms-conditions/datasets"
+      }
+    }
+  ],
+  "interpretation": "Constant-price domestic output per person paired with renewable share of final energy consumption. Descriptive arithmetic only; not household income, purchasing power, company performance, a ranking, or a causal estimate.",
+  "lineage_policy": "Manifest hashes identify the bytes read; they are not source signatures or independent authentication.",
+  "missingness_policy": "Original values, units, flags, names and available/missing/not_returned statuses are retained. No interpolation or zero filling. GDP per person remains available when the renewable share is missing.",
+  "pair_complete_count": 18,
+  "query": {
+    "countries": [
+      "BRA",
+      "CAN",
+      "DEU",
+      "IND",
+      "USA",
+      "ZAF"
+    ],
+    "end_year": 2023,
+    "start_year": 2019
+  },
+  "row_count": 30,
+  "schema_version": 1,
+  "study_csv_file": "study.csv",
+  "study_csv_sha256": "e1aae186220b94bddb04d6f3c0b115da47398ee41272b272f0f57f3ca3fe801a",
+  "summary_file": "summary.json",
+  "summary_sha256": "da932153fefb9694f3c8f6b8e54d93856fab4b2ca34bd047a8746cf1ae43c25f",
+  "tool": "eco-evidence",
+  "tool_version": "0.4.0"
+}

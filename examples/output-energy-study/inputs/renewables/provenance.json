@@ -1,0 +1,64 @@
+{
+  "counts": {
+    "available": 18,
+    "missing": 12,
+    "not_returned": 0
+  },
+  "created_at": "2026-11-26T06:41:15Z",
+  "csv_sha256": "83f17435e45e2fab113f2170c695c21e312f9d08088ea35ea237e65ba10b290b",
+  "data_origin": "worldbank_api",
+  "indicator": {
+    "code": "EG.FEC.RNEW.ZS",
+    "name": "Renewable energy consumption (% of total final energy consumption)",
+    "registry_checked_on": "2026-11-22",
+    "source_note": "Renewable energy consumption is the share of renewable energy in total final energy consumption.",
+    "source_organization": "IEA Energy Statistics Data Browser, International Energy Agency (IEA), uri: https://www.iea.org/data-and-statistics/data-tools/energy-statistics-data-browser, publisher: International Energy Agency (IEA), date accessed: 2025-03-25",
+    "unit": "% of total final energy consumption",
+    "unit_basis": "curated from official indicator name/definition; API unit field verified blank"
+  },
+  "query": {
+    "countries": [
+      "BRA",
+      "CAN",
+      "DEU",
+      "IND",
+      "USA",
+      "ZAF"
+    ],
+    "end_year": 2023,
+    "indicator": "EG.FEC.RNEW.ZS",
+    "start_year": 2019
+  },
+  "raw_sources": [
+    {
+      "file": "raw/001.json",
+      "retrieved_at": "2026-11-26T06:28:34Z",
+      "sha256": "737199f5a06ccd8dad46c7b9a0f5f26f729f341c5f112676fbfc5b53985db313",
+      "url": "https://api.worldbank.org/v2/country/BRA;CAN;DEU;IND;USA;ZAF?format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/002.json",
+      "retrieved_at": "2026-11-26T06:28:35Z",
+      "sha256": "6990e693d077be4eb4e3e1708fb67839ab4f4c521423c6105c116385ec3113d9",
+      "url": "https://api.worldbank.org/v2/indicator/EG.FEC.RNEW.ZS?source=2&format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/003.json",
+      "retrieved_at": "2026-11-26T06:28:36Z",
+      "sha256": "a31cb79bf5f3ad15d0ab0dc72344423b9c1cdd15de7b7381404bce75285abf1b",
+      "url": "https://api.worldbank.org/v2/country/BRA;CAN;DEU;IND;USA;ZAF/indicator/EG.FEC.RNEW.ZS?source=2&date=2019%3A2023&format=json&per_page=1000&page=1"
+    }
+  ],
+  "row_count": 30,
+  "schema_version": 1,
+  "source": {
+    "catalog_url": "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators",
+    "id": "2",
+    "last_updated": "2026-11-11",
+    "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
+    "name": "World Development Indicators",
+    "terms_url": "https://www.worldbank.org/ext/en/legal/terms-conditions/datasets"
+  },
+  "tool": "eco-evidence",
+  "tool_version": "0.4.0"
+}

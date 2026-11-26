@@ -1,0 +1,31 @@
+country_code,country_name,year,indicator_code,indicator_name,value,unit,status,source_obs_status,data_origin
+BRA,Brazil,2019,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1819683217699.38,constant 2015 US$,available,,worldbank_api
+BRA,Brazil,2020,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1760056587795.46,constant 2015 US$,available,,worldbank_api
+BRA,Brazil,2021,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1843881119920.2,constant 2015 US$,available,,worldbank_api
+BRA,Brazil,2022,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1899505377558.02,constant 2015 US$,available,,worldbank_api
+BRA,Brazil,2023,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1961080794855.6,constant 2015 US$,available,,worldbank_api
+CAN,Canada,2019,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1696606794629.52,constant 2015 US$,available,,worldbank_api
+CAN,Canada,2020,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1611127783961.78,constant 2015 US$,available,,worldbank_api
+CAN,Canada,2021,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1706998394665.32,constant 2015 US$,available,,worldbank_api
+CAN,Canada,2022,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1787149136135.45,constant 2015 US$,available,,worldbank_api
+CAN,Canada,2023,NY.GDP.MKTP.KD,GDP (constant 2015 US$),1822053687169.68,constant 2015 US$,available,,worldbank_api
+DEU,Germany,2019,NY.GDP.MKTP.KD,GDP (constant 2015 US$),3675639268112.03,constant 2015 US$,available,,worldbank_api
+DEU,Germany,2020,NY.GDP.MKTP.KD,GDP (constant 2015 US$),3523764998709.97,constant 2015 US$,available,,worldbank_api
+DEU,Germany,2021,NY.GDP.MKTP.KD,GDP (constant 2015 US$),3661544208117.2,constant 2015 US$,available,,worldbank_api
+DEU,Germany,2022,NY.GDP.MKTP.KD,GDP (constant 2015 US$),3727790994177.62,constant 2015 US$,available,,worldbank_api
+DEU,Germany,2023,NY.GDP.MKTP.KD,GDP (constant 2015 US$),3695372350062.48,constant 2015 US$,available,,worldbank_api
+IND,India,2019,NY.GDP.MKTP.KD,GDP (constant 2015 US$),2689205295885.26,constant 2015 US$,available,,worldbank_api
+IND,India,2020,NY.GDP.MKTP.KD,GDP (constant 2015 US$),2533830417086.36,constant 2015 US$,available,,worldbank_api
+IND,India,2021,NY.GDP.MKTP.KD,GDP (constant 2015 US$),2779348258938.28,constant 2015 US$,available,,worldbank_api
+IND,India,2022,NY.GDP.MKTP.KD,GDP (constant 2015 US$),2990839011962.06,constant 2015 US$,available,,worldbank_api
+IND,India,2023,NY.GDP.MKTP.KD,GDP (constant 2015 US$),3206485223026.3,constant 2015 US$,available,,worldbank_api
+USA,United States,2019,NY.GDP.MKTP.KD,GDP (constant 2015 US$),20159639089819,constant 2015 US$,available,,worldbank_api
+USA,United States,2020,NY.GDP.MKTP.KD,GDP (constant 2015 US$),19740041204593.2,constant 2015 US$,available,,worldbank_api
+USA,United States,2021,NY.GDP.MKTP.KD,GDP (constant 2015 US$),20954452976799.5,constant 2015 US$,available,,worldbank_api
+USA,United States,2022,NY.GDP.MKTP.KD,GDP (constant 2015 US$),21483388181185,constant 2015 US$,available,,worldbank_api
+USA,United States,2023,NY.GDP.MKTP.KD,GDP (constant 2015 US$),22113788823329.1,constant 2015 US$,available,,worldbank_api
+ZAF,South Africa,2019,NY.GDP.MKTP.KD,GDP (constant 2015 US$),359483563936.676,constant 2015 US$,available,,worldbank_api
+ZAF,South Africa,2020,NY.GDP.MKTP.KD,GDP (constant 2015 US$),337307318679.639,constant 2015 US$,available,,worldbank_api
+ZAF,South Africa,2021,NY.GDP.MKTP.KD,GDP (constant 2015 US$),353695896167.047,constant 2015 US$,available,,worldbank_api
+ZAF,South Africa,2022,NY.GDP.MKTP.KD,GDP (constant 2015 US$),360975440918.611,constant 2015 US$,available,,worldbank_api
+ZAF,South Africa,2023,NY.GDP.MKTP.KD,GDP (constant 2015 US$),363885280375.697,constant 2015 US$,available,,worldbank_api

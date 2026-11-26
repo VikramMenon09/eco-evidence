@@ -1,0 +1,31 @@
+country_code,country_name,year,indicator_code,indicator_name,value,unit,status,source_obs_status,data_origin
+BRA,Brazil,2019,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),47.5,% of total final energy consumption,available,,worldbank_api
+BRA,Brazil,2020,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),50,% of total final energy consumption,available,,worldbank_api
+BRA,Brazil,2021,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),46.5,% of total final energy consumption,available,,worldbank_api
+BRA,Brazil,2022,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+BRA,Brazil,2023,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+CAN,Canada,2019,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),22.4,% of total final energy consumption,available,,worldbank_api
+CAN,Canada,2020,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),23.9,% of total final energy consumption,available,,worldbank_api
+CAN,Canada,2021,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),23.8,% of total final energy consumption,available,,worldbank_api
+CAN,Canada,2022,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+CAN,Canada,2023,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+DEU,Germany,2019,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),17.1,% of total final energy consumption,available,,worldbank_api
+DEU,Germany,2020,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),18.5,% of total final energy consumption,available,,worldbank_api
+DEU,Germany,2021,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),17.6,% of total final energy consumption,available,,worldbank_api
+DEU,Germany,2022,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+DEU,Germany,2023,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+IND,India,2019,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),33.5,% of total final energy consumption,available,,worldbank_api
+IND,India,2020,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),36.1,% of total final energy consumption,available,,worldbank_api
+IND,India,2021,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),34.9,% of total final energy consumption,available,,worldbank_api
+IND,India,2022,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+IND,India,2023,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+USA,United States,2019,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),10.2,% of total final energy consumption,available,,worldbank_api
+USA,United States,2020,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),11,% of total final energy consumption,available,,worldbank_api
+USA,United States,2021,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),10.9,% of total final energy consumption,available,,worldbank_api
+USA,United States,2022,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+USA,United States,2023,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+ZAF,South Africa,2019,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),8.7,% of total final energy consumption,available,,worldbank_api
+ZAF,South Africa,2020,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),9.8,% of total final energy consumption,available,,worldbank_api
+ZAF,South Africa,2021,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),9.7,% of total final energy consumption,available,,worldbank_api
+ZAF,South Africa,2022,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api
+ZAF,South Africa,2023,EG.FEC.RNEW.ZS,Renewable energy consumption (% of total final energy consumption),,% of total final energy consumption,missing,,worldbank_api

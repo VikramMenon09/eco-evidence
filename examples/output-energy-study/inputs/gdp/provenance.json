@@ -1,0 +1,64 @@
+{
+  "counts": {
+    "available": 30,
+    "missing": 0,
+    "not_returned": 0
+  },
+  "created_at": "2026-11-26T06:41:15Z",
+  "csv_sha256": "03fbbf008ee95fe0517787e2520dc439de0c36630ac4822db4b82751c791df29",
+  "data_origin": "worldbank_api",
+  "indicator": {
+    "code": "NY.GDP.MKTP.KD",
+    "name": "GDP (constant 2015 US$)",
+    "registry_checked_on": "2026-11-22",
+    "source_note": "Gross domestic product is the total income earned through the production of goods and services in an economic territory during an accounting period. It can be measured in three different ways: using either the expenditure approach, the income approach, or the production approach. This indicator is expressed in constant prices, meaning the series has been adjusted to account for price changes over time. The reference year for this adjustment is 2015. This indicator is expressed in United States dollars.",
+    "source_organization": "Country official statistics, National Statistical Organizations and/or Central Banks;\nNational Accounts data files, Organisation for Economic Co-operation and Development (OECD);\nStaff estimates, World Bank (WB)",
+    "unit": "constant 2015 US$",
+    "unit_basis": "curated from official indicator name/definition; API unit field verified blank"
+  },
+  "query": {
+    "countries": [
+      "BRA",
+      "CAN",
+      "DEU",
+      "IND",
+      "USA",
+      "ZAF"
+    ],
+    "end_year": 2023,
+    "indicator": "NY.GDP.MKTP.KD",
+    "start_year": 2019
+  },
+  "raw_sources": [
+    {
+      "file": "raw/001.json",
+      "retrieved_at": "2026-11-26T06:28:34Z",
+      "sha256": "737199f5a06ccd8dad46c7b9a0f5f26f729f341c5f112676fbfc5b53985db313",
+      "url": "https://api.worldbank.org/v2/country/BRA;CAN;DEU;IND;USA;ZAF?format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/002.json",
+      "retrieved_at": "2026-11-26T06:28:35Z",
+      "sha256": "0c9142fbc72bbe6db80d9fa21da2e8a991d4475c0f3e870819b040fa91a0b274",
+      "url": "https://api.worldbank.org/v2/indicator/NY.GDP.MKTP.KD?source=2&format=json&per_page=1000&page=1"
+    },
+    {
+      "file": "raw/003.json",
+      "retrieved_at": "2026-11-26T06:28:35Z",
+      "sha256": "582999362b69556d8dda3b762a63fca855df825c79c88955df69f3489669b14e",
+      "url": "https://api.worldbank.org/v2/country/BRA;CAN;DEU;IND;USA;ZAF/indicator/NY.GDP.MKTP.KD?source=2&date=2019%3A2023&format=json&per_page=1000&page=1"
+    }
+  ],
+  "row_count": 30,
+  "schema_version": 1,
+  "source": {
+    "catalog_url": "https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators",
+    "id": "2",
+    "last_updated": "2026-11-11",
+    "license": "CC BY 4.0 as listed in WDI catalog; check indicator-specific terms",
+    "name": "World Development Indicators",
+    "terms_url": "https://www.worldbank.org/ext/en/legal/terms-conditions/datasets"
+  },
+  "tool": "eco-evidence",
+  "tool_version": "0.4.0"
+}

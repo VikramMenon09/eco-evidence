@@ -121,6 +121,20 @@ Inspection reconstructs the raw responses instead of trusting an earlier CSV or 
 
 Text is the default; `--format json` emits a complete deterministic report on stdout. Inspection never writes to a bundle. See the [inspection guide](docs/INSPECTION.md) for report fields, source-date interpretation and a fresh-data comparison workflow.
 
+## Worked study: output per person and renewable energy
+
+Version 0.4.0 includes a [worked study](docs/OUTPUT_ENERGY_STUDY.md) with an attributed, archived World Bank extract for six countries, 2019–2023. Reproduce it without network access:
+
+```sh
+python3 -m eco_evidence study \
+  --gdp-bundle examples/output-energy-study/inputs/gdp \
+  --population-bundle examples/output-energy-study/inputs/population \
+  --renewables-bundle examples/output-energy-study/inputs/renewables \
+  --output runs/output-energy-replay
+```
+
+The study keeps all 30 country-years and computes GDP divided by population where possible, using explicitly recorded decimal rounding. It retains 12 rows whose renewable observations are missing; 18 rows form complete pairs. The output contains `study.csv`, `summary.json`, provenance and self-contained input bundles. This is a descriptive comparison of domestic output and final energy use, with [series-specific licensing and attribution](examples/output-energy-study/ATTRIBUTION.md). It is not a measure of household income, purchasing power, electricity procurement or company performance.
+
 ## Validation and failure behavior
 
 - Select one reviewed indicator and 1–20 distinct three-letter World Bank country/economy codes. The CLI normalizes letter case. Official country metadata must recognize every code; regional and income aggregates are excluded in this MVP.
@@ -145,6 +159,6 @@ The suite uses synthetic, clearly labeled offline responses and mocked HTTP fail
 
 ## Sources, attribution and licenses
 
-The [World Bank WDI catalog](https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators) lists Creative Commons Attribution 4.0. Retain attribution to World Bank and the original providers named in indicator metadata; review [World Bank dataset terms](https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets) and any indicator-specific conditions before reuse. A code license does not relicense upstream data. EcoEvidence is independent and is not endorsed by the World Bank or other providers.
+The [World Bank WDI catalog](https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators) lists Creative Commons Attribution 4.0. Retain attribution to World Bank and the original providers named in indicator metadata; review [World Bank dataset terms](https://www.worldbank.org/ext/en/legal/terms-conditions/datasets) and any indicator-specific conditions before reuse. A code license does not relicense upstream data. EcoEvidence is independent and is not endorsed by the World Bank or other providers.
 
 For a downloaded bundle, cite the indicator code/name, World Development Indicators, original provider, retrieval date and URL recorded in `provenance.json`. State any later transformations separately. For API mechanics, see the official [basic call structures](https://datahelpdesk.worldbank.org/knowledgebase/articles/898581-api-basic-call-structures) and [indicator query documentation](https://datahelpdesk.worldbank.org/knowledgebase/articles/898599-indicator-api-queries).

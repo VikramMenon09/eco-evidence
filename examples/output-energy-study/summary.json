@@ -1,0 +1,261 @@
+{
+  "artifact_type": "output_per_person_study_summary",
+  "by_year": [
+    {
+      "derived_count": 6,
+      "eligible_country_codes": [
+        "BRA",
+        "CAN",
+        "DEU",
+        "IND",
+        "USA",
+        "ZAF"
+      ],
+      "excluded": [],
+      "exclusion_reason_counts": {},
+      "pair_complete_count": 6,
+      "row_count": 6,
+      "source_status_counts": {
+        "gdp": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "population": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "renewables": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        }
+      },
+      "year": 2019
+    },
+    {
+      "derived_count": 6,
+      "eligible_country_codes": [
+        "BRA",
+        "CAN",
+        "DEU",
+        "IND",
+        "USA",
+        "ZAF"
+      ],
+      "excluded": [],
+      "exclusion_reason_counts": {},
+      "pair_complete_count": 6,
+      "row_count": 6,
+      "source_status_counts": {
+        "gdp": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "population": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "renewables": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        }
+      },
+      "year": 2020
+    },
+    {
+      "derived_count": 6,
+      "eligible_country_codes": [
+        "BRA",
+        "CAN",
+        "DEU",
+        "IND",
+        "USA",
+        "ZAF"
+      ],
+      "excluded": [],
+      "exclusion_reason_counts": {},
+      "pair_complete_count": 6,
+      "row_count": 6,
+      "source_status_counts": {
+        "gdp": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "population": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "renewables": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        }
+      },
+      "year": 2021
+    },
+    {
+      "derived_count": 6,
+      "eligible_country_codes": [],
+      "excluded": [
+        {
+          "country_code": "BRA",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "CAN",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "DEU",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "IND",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "USA",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "ZAF",
+          "reasons": [
+            "renewables_missing"
+          ]
+        }
+      ],
+      "exclusion_reason_counts": {
+        "renewables_missing": 6
+      },
+      "pair_complete_count": 0,
+      "row_count": 6,
+      "source_status_counts": {
+        "gdp": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "population": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "renewables": {
+          "available": 0,
+          "missing": 6,
+          "not_returned": 0
+        }
+      },
+      "year": 2022
+    },
+    {
+      "derived_count": 6,
+      "eligible_country_codes": [],
+      "excluded": [
+        {
+          "country_code": "BRA",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "CAN",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "DEU",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "IND",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "USA",
+          "reasons": [
+            "renewables_missing"
+          ]
+        },
+        {
+          "country_code": "ZAF",
+          "reasons": [
+            "renewables_missing"
+          ]
+        }
+      ],
+      "exclusion_reason_counts": {
+        "renewables_missing": 6
+      },
+      "pair_complete_count": 0,
+      "row_count": 6,
+      "source_status_counts": {
+        "gdp": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "population": {
+          "available": 6,
+          "missing": 0,
+          "not_returned": 0
+        },
+        "renewables": {
+          "available": 0,
+          "missing": 6,
+          "not_returned": 0
+        }
+      },
+      "year": 2023
+    }
+  ],
+  "data_origin": "worldbank_api",
+  "derived_count": 30,
+  "exclusion_count_definition": "Counts are country-year rows per reason; a row may have multiple reasons, so reason counts may overlap.",
+  "exclusion_reason_counts": {
+    "renewables_missing": 12
+  },
+  "pair_complete_count": 18,
+  "pair_complete_definition": "GDP per person is derived and the renewable-energy share is available; zero values remain available.",
+  "row_count": 30,
+  "schema_version": 1,
+  "source_status_counts": {
+    "gdp": {
+      "available": 30,
+      "missing": 0,
+      "not_returned": 0
+    },
+    "population": {
+      "available": 30,
+      "missing": 0,
+      "not_returned": 0
+    },
+    "renewables": {
+      "available": 18,
+      "missing": 12,
+      "not_returned": 0
+    }
+  }
+}

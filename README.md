@@ -1,6 +1,6 @@
 # EcoEvidence
 
-Reproducible evidence bundles and country-year indicator panels for economics and environmental research. Start with a small reviewed World Bank indicator registry, retrieve data, and keep the exact source responses next to the tidy CSV. Every bundle records retrieval timestamps, definitions, units, source organizations and content hashes. Combine archived indicators into a panel that retains unmatched countries and years and reports its coverage.
+Reproducible evidence bundles for economics and environmental research. Retrieve reviewed World Bank country indicators or NOAA global annual atmospheric CO₂, keeping exact source responses next to tidy CSVs. Every bundle records source identity, units, retrieval timestamps and content hashes. World Bank indicator panels retain unmatched countries and years and report their coverage; NOAA concentration records retain the reported uncertainty and global spatial scope.
 
 This toolkit is a data foundation for a long-term research resource. It does not infer causality, rank countries or silently fill missing values. Its useful next contributions are documented indicator additions, source checks, validation improvements and reproducible research examples. The [engineering guide](docs/ENGINEERING.md) explains its data flow, trust boundaries, failure behavior and maintenance checks.
 
@@ -135,7 +135,25 @@ python3 -m eco_evidence study \
 
 The study keeps all 30 country-years and computes GDP divided by population where possible, using explicitly recorded decimal rounding. It retains 12 rows whose renewable observations are missing; 18 rows form complete pairs. The output contains `study.csv`, `summary.json`, provenance and self-contained input bundles. This is a descriptive comparison of domestic output and final energy use, with [series-specific licensing and attribution](examples/output-energy-study/ATTRIBUTION.md). It is not a measure of household income, purchasing power, electricity procurement or company performance.
 
-## Validation and failure behavior
+## NOAA global atmospheric CO₂
+
+Version 0.5.0 adds a second primary source: [NOAA GML's annual global marine-surface CO₂ record](https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_annmean_gl.txt). Fetch a fresh archive:
+
+```sh
+python3 -m eco_evidence climate --start-year 2020 --end-year 2026 \
+  --output runs/noaa-global-co2
+```
+
+Or reproduce the attributed example entirely offline:
+
+```sh
+python3 -m eco_evidence climate --start-year 2020 --end-year 2026 \
+  --offline examples/noaa-global-co2 --output runs/noaa-replay
+```
+
+The example retains six reported annual means and uncertainties, plus an explicit `not_returned` row for 2026. Values are dry-air mole fractions in ppm. They describe the global marine-surface background, not national emissions or a business's carbon footprint. This separate archive format cannot be passed to the World Bank `panel`, `inspect` or `study` commands. See the [climate guide](docs/CLIMATE.md) for exact fields, source revisions, transport limits and [NOAA attribution](examples/noaa-global-co2/ATTRIBUTION.md).
+
+## World Bank validation and failure behavior
 
 - Select one reviewed indicator and 1–20 distinct three-letter World Bank country/economy codes. The CLI normalizes letter case. Official country metadata must recognize every code; regional and income aggregates are excluded in this MVP.
 - Years run from 1960 through the current UTC year, in ascending order. An accepted year does not imply data availability.
@@ -155,9 +173,9 @@ If Python reports a certificate verification failure, configure your Python inst
 python3 -m unittest discover -s tests -v
 ```
 
-The suite uses synthetic, clearly labeled offline responses and mocked HTTP failures. It exercises the actual command entry point, pagination consistency, precise decimal parsing, missing-versus-zero semantics, invalid inputs and schemas, hash-verified offline replay, CSV/provenance agreement, request limits, and incomplete-run cleanup. Redirect tests run urllib's actual redirect handlers with a fake transport and verify that rejected destinations receive no request. Tests make no network calls.
+The suite uses synthetic, clearly labeled responses, attributed real archives and mocked HTTP failures. It exercises the actual command entry point, pagination consistency, precise numeric preservation, missing-versus-zero semantics, invalid inputs and schemas, hash-verified offline replay, CSV/provenance agreement, request limits, and incomplete-run cleanup. Redirect tests run urllib's actual redirect handlers with a fake transport and verify that rejected destinations receive no request. Tests make no network calls.
 
-## Sources, attribution and licenses
+## World Bank sources, attribution and licenses
 
 The [World Bank WDI catalog](https://datacatalog.worldbank.org/search/dataset/0037712/world-development-indicators) lists Creative Commons Attribution 4.0. Retain attribution to World Bank and the original providers named in indicator metadata; review [World Bank dataset terms](https://www.worldbank.org/ext/en/legal/terms-conditions/datasets) and any indicator-specific conditions before reuse. A code license does not relicense upstream data. EcoEvidence is independent and is not endorsed by the World Bank or other providers.
 

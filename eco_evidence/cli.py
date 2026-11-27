@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 
 from . import __version__
+from .climate import ClimateQuery, export_climate
 from .core import BundleReader, EvidenceError, NetworkReader, Query, export_bundle
 from .inspection import inspect_bundle, render_text
 from .panel import export_panel
@@ -18,6 +19,15 @@ def main(argv=None):
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("indicators", help="List the reviewed indicator registry (no network).")
+    climate = commands.add_parser("climate", help="Fetch or replay NOAA global annual atmospheric CO2, with reported uncertainty.")
+    climate.add_argument("--start-year", type=int, required=True)
+    climate.add_argument("--end-year", type=int, required=True)
+    climate.add_argument("--output", type=Path, required=True,
+                         help="New climate bundle directory; never overwrites earlier evidence")
+    climate.add_argument("--offline", type=Path,
+                         help="Replay a NOAA climate bundle with the same years, with no network requests")
+    climate.add_argument("--timeout", type=float, default=15,
+                         help="Blocking network-operation timeout in seconds (1–30); one fresh request, no cache")
     fetch = commands.add_parser("fetch", help="Fetch one indicator, or replay an archived query offline.")
     fetch.add_argument("--indicator", required=True, help="Registry alias or World Bank indicator code")
     fetch.add_argument("--countries", required=True, help="Comma-separated ISO3-style World Bank economy codes, e.g. USA,IND")
@@ -51,6 +61,12 @@ def main(argv=None):
             print(f"{item.alias:12} {item.code:18} {item.unit}\n  {item.name}\n  {item.metadata_url}")
         return 0
     try:
+        if args.command == "climate":
+            provenance = export_climate(ClimateQuery(args.start_year, args.end_year), args.output,
+                                        offline=args.offline, timeout=args.timeout)
+            print(json.dumps({"output": str(args.output.resolve()), "rows": provenance["row_count"],
+                              "counts": provenance["counts"], "data_origin": provenance["data_origin"]}, sort_keys=True))
+            return 0
         if args.command == "study":
             provenance = export_study(args.gdp_bundle, args.population_bundle, args.renewables_bundle, args.output)
             print(json.dumps({"output": str(args.output.resolve()), "rows": provenance["row_count"],

@@ -1,0 +1,8 @@
+year,co2_mean,co2_uncertainty,unit,status,spatial_scope,data_origin
+2020,412.44,0.07,ppm,available,global_marine_surface,noaa_gml
+2021,414.70,0.06,ppm,available,global_marine_surface,noaa_gml
+2022,417.08,0.09,ppm,available,global_marine_surface,noaa_gml
+2023,419.35,0.10,ppm,available,global_marine_surface,noaa_gml
+2024,422.79,0.09,ppm,available,global_marine_surface,noaa_gml
+2025,425.63,0.05,ppm,available,global_marine_surface,noaa_gml
+2026,,,ppm,not_returned,global_marine_surface,noaa_gml

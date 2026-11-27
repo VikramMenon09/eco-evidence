@@ -1,5 +1,7 @@
 # Example evidence bundles
 
+`noaa-global-co2/` is an attributed **real NOAA GML archive** for 2020–2026. It retains six annual global marine-surface CO₂ means and reported uncertainties, plus an explicit `not_returned` row for 2026. Its full raw file includes 1979–2025. See [NOAA attribution](noaa-global-co2/ATTRIBUTION.md) and the [offline reproduction guide](../docs/CLIMATE.md). It has a distinct global climate schema and cannot be passed into the World Bank country-indicator commands.
+
 `output-energy-study/` is a complete **real-data worked study**, including three source bundles for BRA, CAN, DEU, IND, USA and ZAF, 2019–2023. It retains 30 country-years, derives 30 GDP-per-person values, and identifies 18 complete pairs with renewable-energy shares. The 12 renewable observations for 2022–2023 are explicitly missing in this retrieval. See its [attribution and licenses](output-energy-study/ATTRIBUTION.md) and the [reproduction guide](../docs/OUTPUT_ENERGY_STUDY.md). Its `inputs/` directories are ordinary evidence bundles; the top-level directory is a study output.
 
 - `population-2020-2022/` is a real World Bank API retrieval for India and the United States, years 2020–2022. It contains six reported values, full raw responses and provenance. Use the recorded retrieval timestamp and original providers when citing it. Values may be revised by the source later.
@@ -9,4 +11,4 @@
 
 Replay a bundle without network access using the same query and `--offline PATH`, with a new `--output` directory. The main README includes exact commands. Retain all files in a bundle together; hashes in provenance let you check each raw response and exported CSV against that manifest. The manifest and origin label are not source-authenticated; use a trusted bundle custodian and preserve repository history.
 
-The real bundle retains World Bank and original-provider attribution and is subject to the upstream data terms. Synthetic fixtures are project-authored test material. Neither example is an economic model, causal estimate or forecast.
+Real World Bank archives retain World Bank and original-provider attribution and remain subject to their upstream data terms. The NOAA archive has its own public-data terms and attribution record. Synthetic fixtures are project-authored test material. None of the examples is a causal estimate or forecast.

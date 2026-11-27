@@ -1,0 +1,2 @@
+# Keep the official source bytes, including its original whitespace.
+/examples/noaa-global-co2/raw/co2_annmean_gl.txt -text -whitespace

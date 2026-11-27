@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "eco-evidence"
 dynamic = ["version"]
-description = "Reproducible World Bank evidence bundles for environmental economics research"
+description = "Reproducible World Bank and NOAA evidence bundles for environmental economics research"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []

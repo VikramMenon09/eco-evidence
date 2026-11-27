@@ -1,7 +1,7 @@
 """Check the built package's public CLI, independently of source-tree imports.
 
 Install a wheel, then run: python -I scripts/check_installed.py
-Uses only the standard library and the existing, explicitly synthetic archive.
+Uses only the standard library, synthetic fixtures and attributed real archives.
 """
 
 import csv
@@ -30,7 +30,7 @@ def main():
     fixture = checkout / "examples" / "synthetic-population"
     input_directories = (fixture, checkout / "examples/synthetic-gdp",
                          checkout / "examples/synthetic-population-revised",
-                         checkout / "examples/output-energy-study")
+                         checkout / "examples/output-energy-study", checkout / "examples/noaa-global-co2")
 
     def fixture_snapshot():
         return {path.relative_to(checkout): path.read_bytes() if path.is_file() else None
@@ -176,9 +176,39 @@ def main():
         refused = run(study_arguments(study_example / "inputs", study), expected=2)
         if refused.stdout or "Output already exists" not in refused.stderr or original != snapshot():
             raise RuntimeError("Study overwrite refusal did not preserve earlier research.")
+        climate_example = checkout / "examples/noaa-global-co2"
+        climate_arguments = ["climate", "--start-year", "2020", "--end-year", "2026",
+                             "--offline", str(climate_example), "--output", "climate"]
+        climate_result = json.loads(run(climate_arguments).stdout)
+        climate = Path(directory) / "climate"
+        climate_bytes = (climate / "data.csv").read_bytes()
+        climate_manifest = json.loads((climate / "provenance.json").read_text(encoding="utf-8"))
+        if (climate_result["rows"] != 7 or climate_result["data_origin"] != "noaa_gml"
+                or climate_result["counts"] != {"available": 6, "not_returned": 1}
+                or climate_bytes != (climate_example / "data.csv").read_bytes()
+                or climate_manifest["tool_version"] != installed_version
+                or climate_manifest["data_csv_sha256"] != hashlib.sha256(climate_bytes).hexdigest()):
+            raise RuntimeError("Installed NOAA climate replay lost coverage, exact source tokens or provenance.")
+        climate_rows = list(csv.DictReader(io.StringIO(climate_bytes.decode("utf-8"))))
+        if (climate_rows[-1]["year"] != "2026" or climate_rows[-1]["status"] != "not_returned"
+                or climate_rows[-1]["co2_mean"] or climate_rows[-1]["co2_uncertainty"]
+                or any(row["spatial_scope"] != "global_marine_surface" or row["unit"] != "ppm"
+                       for row in climate_rows)):
+            raise RuntimeError("Installed NOAA climate replay changed geography, units or absent-year semantics.")
+        run(["climate", "--start-year", "2020", "--end-year", "2026",
+             "--offline", str(climate), "--output", "climate-replay"])
+        climate_replay = Path(directory) / "climate-replay"
+        if ((climate_replay / "data.csv").read_bytes() != climate_bytes
+                or json.loads((climate_replay / "provenance.json").read_text())["raw_sources"]
+                != climate_manifest["raw_sources"]):
+            raise RuntimeError("Installed NOAA archive cannot reproduce its original values, uncertainty and retrieval lineage.")
+        original = snapshot()
+        refused = run(climate_arguments, expected=2)
+        if refused.stdout or "Output already exists" not in refused.stderr or original != snapshot():
+            raise RuntimeError("NOAA climate overwrite refusal did not preserve earlier research.")
         if fixture_snapshot() != original_fixtures:
             raise RuntimeError("An installed command changed one of the original example archives.")
-    print(f"Installed eco-evidence {installed_version}: fetch, panel, inspect, study, offline replay and preservation passed.")
+    print(f"Installed eco-evidence {installed_version}: fetch, panel, inspect, study, climate, offline replay and preservation passed.")
 
 
 if __name__ == "__main__":

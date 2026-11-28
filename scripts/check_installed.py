@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import sysconfig
 import tempfile
 
@@ -150,6 +151,45 @@ def main():
         if refused.stdout or "Traceback" in refused.stderr or original != snapshot():
             raise RuntimeError("Inspection changed inputs or failed to reject incomparable queries cleanly.")
 
+        quality_arguments = ["quality", "--bundle", str(fixture)]
+        quality_json = run([*quality_arguments, "--format", "json"]).stdout
+        quality = json.loads(quality_json)
+        if (quality["tool_version"] != installed_version
+                or quality["bundle"]["data_origin"] != "synthetic_fixture"
+                or quality["summary"]["counts"] != {"available": 1, "missing": 1, "not_returned": 1}
+                or quality["summary"]["zero_value_count"] != 1
+                or quality["summary"]["gap_year_count"] != 2
+                or quality["countries"][0]["gaps"] != [{
+                    "start_year": 2020, "end_year": 2021, "length": 2,
+                    "position": "leading", "counts": {"missing": 1, "not_returned": 1}}]
+                or [(row["year"], row["status"], row["value"]) for row in quality["rows"]]
+                   != [(2020, "not_returned", ""), (2021, "missing", ""), (2022, "available", "0")]):
+            raise RuntimeError("Installed quality audit lost source rows, zero or gap distinctions.")
+        quality_text = run(quality_arguments).stdout
+        if (not quality_text.isascii() or "synthetic_fixture" not in quality_text
+                or "SP.POP.TOTL" not in quality_text or "leading" not in quality_text):
+            raise RuntimeError("Installed quality text omitted source identity or gap interpretation.")
+        for output_format, expected_report in (("json", quality_json), ("text", quality_text)):
+            module = subprocess.run(
+                [sys.executable, "-I", "-m", "eco_evidence", *quality_arguments, "--format", output_format],
+                cwd=directory, env=environment, text=True, capture_output=True, timeout=30,
+            )
+            if module.returncode != 0 or module.stdout != expected_report or module.stderr:
+                raise RuntimeError("Installed module and console quality reports disagree.")
+        renewable_quality = json.loads(run([
+            "quality", "--bundle", str(checkout / "examples/output-energy-study/inputs/renewables"),
+            "--format", "json",
+        ]).stdout)
+        if (renewable_quality["bundle"]["data_origin"] != "worldbank_api"
+                or renewable_quality["summary"]["row_count"] != 30
+                or renewable_quality["summary"]["counts"] != {"available": 18, "missing": 12, "not_returned": 0}
+                or renewable_quality["summary"]["gap_position_counts"]["trailing"] != 6
+                or renewable_quality["rule"]["maximum"] != "100"):
+            raise RuntimeError("Installed quality audit changed the retained renewable archive's coverage.")
+        refused = run(["quality", "--bundle", str(checkout / "examples/noaa-global-co2")], expected=2)
+        if refused.stdout or "Traceback" in refused.stderr or original != snapshot():
+            raise RuntimeError("Quality audit changed files or accepted an incompatible climate archive.")
+
         study_example = checkout / "examples/output-energy-study"
 
         def study_arguments(inputs, output):
@@ -208,7 +248,7 @@ def main():
             raise RuntimeError("NOAA climate overwrite refusal did not preserve earlier research.")
         if fixture_snapshot() != original_fixtures:
             raise RuntimeError("An installed command changed one of the original example archives.")
-    print(f"Installed eco-evidence {installed_version}: fetch, panel, inspect, study, climate, offline replay and preservation passed.")
+    print(f"Installed eco-evidence {installed_version}: fetch, panel, inspect, quality, study, climate, offline replay and preservation passed.")
 
 
 if __name__ == "__main__":

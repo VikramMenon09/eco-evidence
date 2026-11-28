@@ -105,6 +105,19 @@ The panel is reconstructed from checksum-verified raw responses. Earlier input `
 
 See the [panel guide](docs/PANELS.md) for the exact output contract, coverage interpretation and an offline reconstruction command.
 
+## Audit an archive's coverage and review flags
+
+Version 0.6.0 adds an offline quality report for one World Bank indicator bundle:
+
+```sh
+python3 -m eco_evidence quality --bundle examples/synthetic-population
+python3 -m eco_evidence quality --bundle examples/output-energy-study/inputs/renewables --format json
+```
+
+The first command audits invented test data; the second audits the attributed real archive already included in the worked study. Reports retain every country-year, exact reconstructed value string, source flag and unit. They show consecutive gaps, keeping explicit nulls distinct from omitted records and real zeroes, and flag values outside stated project review bounds. A flag requests review; it does not replace a value or establish a source error. No network access, input modification, imputation or quality score is involved.
+
+Both text and JSON include source definitions, original retrieval dates, hashes and licensing context. See the [quality-report guide](docs/QUALITY.md) for the rules, gap classifications, complete row ledger and interpretation limits. Use `inspect --baseline` separately when comparing source revisions.
+
 ## Inspect metadata and compare archives
 
 Read an archived indicator's definitions, original provider, units, coverage and source dates without making network requests:

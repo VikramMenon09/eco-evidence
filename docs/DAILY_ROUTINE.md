@@ -1,25 +1,50 @@
-# Daily contribution routine
+# Portfolio contribution routine
 
-The owner's Codex automation attempts one substantial contribution per Pacific calendar day. It chooses a new random start minute between **08:00 and 22:30 America/Los_Angeles**, leaving time for validation and publication before midnight. It avoids the immediately preceding start minute. Random times are generated locally, rather than repeating a fixed weekly timetable.
+The owner's Codex automation targets three useful contributions per Pacific calendar day across the [project portfolio](PORTFOLIO.md). It plans a fresh random start minute in each of three bands:
 
-The native scheduler stores an ordinary daily time. After each attempted contribution, the agent uses the **Codex Automations action** to move that same automation to the next randomly chosen time. The local `next_at` date prevents a second contribution if a changed daily clock time also produces a scheduler check later on the current day. A skipped check must not pick another time or create a commit.
+| Session | Planned start window, America/Los_Angeles |
+| --- | --- |
+| 1 — morning | 08:00–11:00 |
+| 2 — afternoon | 13:00–16:00 |
+| 3 — evening | 18:00–20:30 |
 
-The scheduling helper only computes plans and maintains local state. It does **not** create an OS cron job, edit Codex configuration, push code, or change an automation itself. Native scheduling remains under the user's control; pausing the automation must remain effective.
+Only one session can own an active lease. Initial claims have a 15-minute startup grace after their band's final minute: through 11:15:59, 16:15:59 or 20:45:59 respectively. Targets themselves stay inside the table's bands. An attempt may continue beyond its start band, but version 2 publication preflight rejects new GitHub writes at or after 23:45, with a hard evidence cutoff at midnight. Missed sessions are skipped, not accumulated into a catch-up burst. Each date/session can be attempted once; a blocked attempt consumes that session too. A later day's corresponding session avoids repeating the most recent planned clock minute, including across gaps. Random choices are generated locally, not taken from a fixed weekly timetable.
+
+The native scheduler stores one ordinary daily time: the next pending session. After each attempt or expired start window, the agent uses the **Codex Automations action** to move that same automation to the next planned time. Local date/session guards prevent extra work when the daily rule also wakes on an unintended date. A skipped check must not create a commit or rerandomize a still-future target.
+
+The helper does **not** edit Codex configuration, create OS jobs, publish code or communicate with collaborators. Keep the computer on and Codex running for this local routine. A missed native wake can delay recovery until the same clock time the following day; later slots are not independent background jobs and may also be missed. Pauses and notification preferences remain controlled by the user. Unavailable accounts, reviewers, sources or checks can prevent delivery; report these failures honestly.
+
+## Migration and configuration
+
+Use Python 3.11 or newer on macOS/Linux. State stays untracked outside the repository. Version 1 remains readable with its original one-attempt-per-day behavior. Existing state is never silently migrated or reinitialized.
+
+To enable the portfolio, inspect and back up the existing state, verify there is no active run, then explicitly execute:
+
+```sh
+python3 automation/daily_routine.py --state /path/to/local-state.json migrate-to-portfolio
+```
+
+Migration preserves the earlier history objects and their original identities. Their dates remain consumed conservatively. Version 2 records a `slot`, a planned timestamp and a distinct `daily/YYYY-MM-DD/slot-N` branch for each new attempt. It also retains plans so missed slots cannot be resampled. Its initial repository allowlist contains EcoEvidence, Carbon Commons and Circular Economy Lab. A later separately scoped project can be registered while no work is active:
+
+```sh
+python3 automation/daily_routine.py --state /path/to/local-state.json add-project \
+  --repository https://github.com/VikramMenon09/NEW_PROJECT_NAME
+```
+
+That URL is a placeholder. Registration accepts only an exact owned GitHub URL with a safe repository name. It does not create a repository or verify its contents. Never use a new empty state to bypass existing history. The `--now` flag is only for reproducible tests; real runs use the real clock. Version 2 retains at most 10,000 plans and 10,000 history records, rejecting further writes at the limit instead of silently discarding history; at three sessions a day this permits roughly nine years of operation before explicit archival maintenance.
 
 ## Run protocol
 
-Use Python 3.11 or newer on macOS/Linux. Choose an untracked local state path outside the source tree.
+1. Check the native automation's current settings and the helper's `status` output promptly. If paused, stop and preserve the pause. Defer project investigation until after claiming so normal preparation does not consume the start window.
+2. If `schedule_sync_pending` is true, apply the returned schedule through the native automation action, preserving the full current prompt, destination, activation state and notification preferences. Verify the stored schedule, then run `ack-schedule --next-at` with the exact returned timestamp.
+3. Run `claim`. On `skip`, do no project work. A future target or another owner's live lease is an ordinary no-work result. When the target's start band and grace have expired and no lease is active, use `plan-next` once, synchronize and acknowledge that plan. Never advance an already-future target. Planning chooses the next eligible band at least five minutes ahead. A new owned repository URL may be registered before claim; keep this lightweight and do substantive research after claiming.
+4. A successful claim returns the stable `run_id`, work date, slot, scheduled timestamp and branch, plus the current owner's `lease_id`. Use only the token returned by your own successful claim. A stale `resume` retains the work identity and rotates its token; an older-date `recover` permits bookkeeping only. Inspect local changes and existing PRs before editing. Never duplicate a PR, overwrite unrelated work or republish older work as today's contribution.
+5. Read `AGENTS.md`, this guide and the selected project's instructions and roadmap. Choose one substantial portfolio task, delegate bounded work, verify primary evidence where needed, implement it, run meaningful tests and the normal user entry point, and obtain actual Claude review. Repair material findings. A feature, sourced study or repaired defect is an outcome; an empty commit is not.
+6. Immediately before every repository creation, push, PR creation/update or merge, run `check-publish` with both ownership IDs. Version 2 verifies an unexpired current lease and the same Pacific work date, 08:00 until 23:45, then refreshes ownership. An operation started before the margin can finish later, but publication evidence must still precede midnight. The helper cannot hold its local lock across GitHub actions, so keep only the current owner writing and recheck after interruptions. Use the verified expected head SHA for a merge and retain review protections.
+7. Commit with accurate authorship, publish a focused PR and attach it to the chat. Verify CI on the exact head before merging authorized changes. Record the verified PR URL, full head SHA and server publication timestamp with `finish --outcome published`; report merge status separately. For a new PR use its creation time; for an existing PR updated this run use independently verified publication/merge evidence from this work date. Never substitute bookkeeping time or count the same earlier publication again. If no qualifying publication occurred, finish as blocked with the concrete reason.
+8. Synchronize the returned next plan through the native automation action, verify it, and acknowledge the exact target. Preserve a pause that occurred during work. If synchronization fails, retain the pending flag and report the failure.
 
-1. Read `AGENTS.md`, the roadmap, the native automation's current settings, and the helper's `status` output. Preserve current user pauses and preferences.
-2. If `schedule_sync_pending` is true, apply the returned schedule through the native automation action, preserving the existing prompt, destination, and activation/notification settings, then run `ack-schedule` with the exact `next_at` value.
-3. Run `claim`. If it says `skip`, do not perform repository work. In particular, a future target, a completed day, and a live lease are normal no-work outcomes.
-4. A successful claim gives a stable `run_id`, work date and branch, plus a separate `lease_id` for the current owner. Use only the token returned by your own successful claim; never adopt a token from the state file, status output, or another worker. A `resume` action reuses today's interrupted work; `recover` only reconciles an earlier day's attempt. Inspect local changes and any existing PR for that branch before editing or pushing. Never duplicate an existing PR or overwrite unrelated work. Never publish from an older work date: record its verified previous publication or blocked outcome first, then follow the returned schedule.
-5. Pick one useful change, delegate bounded work, check primary evidence, implement it, run tests and the actual user workflow, and obtain the independent Claude review. Keep the change focused and substantial.
-6. Immediately before each push, PR publication, or merge, run `check-publish` with both IDs. It verifies the current owner's unexpired lease, today's work date, and the 08:00–23:59 Pacific window, then refreshes the lease. Do not proceed if it fails. The helper cannot hold a lock across GitHub actions; keep only this owner writing, use the expected head SHA when merging, and recheck ownership after an interruption. Do not begin new external writes after 23:45, leaving a margin before the hard midnight cutoff. If the window ends, preserve unpublished work and record a blocked attempt. Do not backdate commits.
-7. Push the feature branch, publish or update its PR, attach the PR to the current chat, verify the exact head's checks, and merge authorized work when ready. Record the real PR URL, full head commit SHA and an independently verified GitHub publication timestamp with `finish --outcome published`. For a newly created PR, use its `createdAt`; for an existing PR completed this run, use the verified publication/merge time for this run, not an old creation date. This records actual publication, not a claim that every published PR was merged; report PR and merge status separately. A blocked attempt uses `finish --outcome blocked` and a concrete reason.
-8. Apply the returned schedule through the native automation action, verify it, then acknowledge the exact plan. If rescheduling fails, leave the pending flag in place for recovery and report that failure.
-
-## Example helper commands
+## Ownership and evidence
 
 ```sh
 python3 automation/daily_routine.py --state /path/to/local-state.json status
@@ -32,16 +57,10 @@ python3 automation/daily_routine.py --state /path/to/local-state.json finish \
   --commit THE_VERIFIED_FULL_COMMIT_SHA --published-at THE_VERIFIED_PUBLICATION_TIME
 ```
 
-Those final arguments are placeholders in this example, not real contribution evidence. Initialization requires the actual native automation ID and a future offset-aware first target. The `--now` option exists only for reproducible tests; ordinary runs must use the real clock.
+These final arguments are examples, not publication evidence. Version 2 accepts published PRs only from its explicit repository allowlist and rejects a previously published PR URL or commit SHA, including evidence retained from version 1. Choose unpublished work for a new counted session. An already recorded PR can still need maintenance, but closing or updating it is not another qualifying publication; describe that work without recording a second success. Local commits alone are not publication.
 
-A run lease lasts three hours. A stale reclaim retains the branch, original work date and run ID but rotates the lease ID, invalidating the previous owner's token. For lengthy work, call `check-publish` again before 2.5 hours have elapsed to refresh ownership within the allowed window. If ownership only expired, call `claim`: continue publication only for a same-run `resume` with the newly returned lease ID. A `recover` result permits bookkeeping only, and any different run or owner means stop. Finishing also requires a current, unexpired lease; claim the stale run first if its lease expired before bookkeeping. Do not take over a live lease or mark another running agent's work blocked.
+A lease lasts three hours. Refresh with `check-publish` before 2.5 hours have elapsed during long work. If it expires, claim again and continue only on a same-run `resume` using the new token. Never take over a live lease or copy an owner token from status, the state file or another worker. Finishing requires a current unexpired lease too.
 
-Bookkeeping is permitted after midnight. A PR created at 23:59 and recorded at 00:10 belongs to the previous day; a blocked finish at 00:10 also consumes only its original work date. If verified GitHub evidence shows a publication crossed midnight or occurred outside the allowed window, do not record it as a valid same-day publication. Record the original attempt as blocked, put its actual URL and timestamp in the note, and report the timing violation. A PR created inside the window can still count as published if a later merge is blocked. An interrupted prior-day run is reconciled before new work. The helper can then schedule a random time later that same day if a valid window remains, rather than accidentally skipping an extra day.
+Bookkeeping can happen after midnight while retaining the original work date and slot. A PR created at 23:59 and recorded at 00:10 belongs to the original date; a PR created after midnight is not a valid publication for the earlier attempt. Record a timing violation as blocked, retain its actual URL/timestamp in the note, and report it. Reconcile an interrupted prior-day attempt before starting another one. Recovery can schedule a remaining slot today without consuming an unrelated day.
 
-If a scheduled check arrives after 22:30, do not start new work. With no active lease, use `plan-next` once to recover a stale target, then apply and acknowledge it. An overdue wake before 08:00 can also use `plan-next` to choose a time in the remaining day. Do not advance an already-future target. A missing or invalid state file is a blocker: preserve it and inspect existing branches and PRs before recovering it; never silently initialize a fresh empty history.
-
-## What a successful day means
-
-A success has a useful artifact or behavior, documented evidence, passing checks, the independent review, and a real GitHub PR. A local commit alone is not publication. Keep the computer on and Codex running for this local routine. An unavailable machine, account, data source, reviewer, or CI service can prevent a day's delivery; failures must remain visible instead of being replaced with filler activity.
-
-Paid sponsorship and spending are outside this routine. GitHub achievement awards are separate from the work log and must be verified from GitHub if reported.
+Version 1 still uses its original 08:00–22:30 start window, one attempt per date and `daily/YYYY-MM-DD` branches until explicit migration. Do not apply the three-slot protocol to unmigrated state. The native action, not this helper, enforces user pauses; check native status before work and preserve it during every schedule update.

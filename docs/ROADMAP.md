@@ -19,8 +19,8 @@ The aim is a research resource that makes economic and environmental comparisons
 6. **Business-relevant comparisons.** Add transparent sector or energy-cost context where licensed data supports it. Document boundaries and avoid turning country averages into company-specific estimates.
 7. **Usable research interfaces.** Improve CLI help, examples, package installation, and notebooks. Add a browser interface only when it serves an established workflow.
 
-## Choosing the daily task
+## Choosing a portfolio session task
 
-Read open issues and recent commits, reproduce the next gap, and set a checkable acceptance criterion before coding. Prefer finishing an existing useful PR over starting another. Create a new issue only for a real problem or planned capability. A contribution need not be large in line count; it must make the research workflow meaningfully better.
+The [portfolio routine](PORTFOLIO.md) targets three useful contributions per day across EcoEvidence, Carbon Commons and Circular Economy Lab, with weekly time for new projects. Read open issues and recent commits, reproduce the next gap, and set a checkable acceptance criterion before coding. Prefer finishing an existing useful PR over starting another. Create a new issue only for a real problem or planned capability. A contribution need not be large in line count; it must make the research workflow meaningfully better.
 
 Keep the repository coherent. A new repository is warranted only for a genuinely separate project, not to satisfy a daily activity count. If research, source access, review, or tests block publication, record the exact blocker and retain useful work for the next attempt.

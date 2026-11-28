@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -10,8 +11,23 @@ from .climate import ClimateQuery, export_climate
 from .core import BundleReader, EvidenceError, NetworkReader, Query, export_bundle
 from .inspection import inspect_bundle, render_text
 from .panel import export_panel
+from .quality import quality_bundle, render_quality_text
 from .registry import INDICATORS
 from .study import export_study
+
+
+def _write_report_stdout(payload):
+    """Write a completed ASCII report and handle failed output streams cleanly."""
+    if sys.stdout is None:
+        raise OSError("Standard output is closed")
+    try:
+        sys.stdout.buffer.write(payload)
+        sys.stdout.buffer.flush()
+    except OSError:
+        # Prevent another failed flush from changing the exit code at shutdown.
+        with open(os.devnull, "wb") as sink:
+            os.dup2(sink.fileno(), sys.stdout.fileno())
+        raise
 
 
 def main(argv=None):
@@ -49,6 +65,10 @@ def main(argv=None):
                          help="Reference bundle with the exact same query; compares baseline to bundle")
     inspect.add_argument("--format", choices=("text", "json"), default="text",
                          help="Report format on stdout (default: text); never writes inside an archive")
+    quality = commands.add_parser("quality", help="Audit archived World Bank coverage, gaps and review flags offline.")
+    quality.add_argument("--bundle", type=Path, required=True, help="One World Bank indicator evidence bundle")
+    quality.add_argument("--format", choices=("text", "json"), default="text",
+                         help="Complete report on stdout (default: text); flags do not change source values")
     study = commands.add_parser("study", help="Compare output per person with renewable energy shares offline.")
     study.add_argument("--gdp-bundle", type=Path, required=True)
     study.add_argument("--population-bundle", type=Path, required=True)
@@ -61,6 +81,12 @@ def main(argv=None):
             print(f"{item.alias:12} {item.code:18} {item.unit}\n  {item.name}\n  {item.metadata_url}")
         return 0
     try:
+        if args.command == "quality":
+            report = quality_bundle(args.bundle)
+            text = (json.dumps(report, indent=2, sort_keys=True) + "\n"
+                    if args.format == "json" else render_quality_text(report))
+            _write_report_stdout(text.encode("ascii"))
+            return 0
         if args.command == "climate":
             provenance = export_climate(ClimateQuery(args.start_year, args.end_year), args.output,
                                         offline=args.offline, timeout=args.timeout)
